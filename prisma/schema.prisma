@@ -21,6 +21,7 @@ model User {
   accounts         Account[]
   twofactors       TwoFactor[]
   files            File[]
+  folders          Folder[]
 
   @@unique([email])
   @@map("user")
@@ -97,17 +98,81 @@ enum FileStatus {
 }
 
 model File {
-  id          String     @id @default(cuid())
-  key         String     @unique
+  id          String      @id @default(cuid())
+  key         String      @unique
   name        String
   size        BigInt
   contentType String
-  status      FileStatus @default(PENDING)
+  status      FileStatus  @default(PENDING)
   userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderId    String?
+  folder      Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  shareLinks  ShareLink[]
 
   @@index([userId, status])
+  @@index([folderId])
   @@map("file")
+}
+
+enum FolderCategory {
+  VIDEO
+  PHOTO
+  AUDIO
+
+  @@map("folder_category")
+}
+
+model Folder {
+  id        String         @id @default(cuid())
+  name      String
+  category  FolderCategory
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Folder?        @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[]       @relation("FolderChildren")
+  files     File[]
+  shareLink ShareLink?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId, category, parentId])
+  @@map("folder")
+}
+
+model ShareLink {
+  id        String          @id @default(cuid())
+  token     String          @unique
+  fileId    String?         @unique
+  file      File?           @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  folderId  String?         @unique
+  folder    Folder?         @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+  expiresAt DateTime
+  activity  ShareActivity[]
+
+  @@map("share_link")
+}
+
+enum ShareActivityType {
+  VIEW
+  PLAY
+  DOWNLOAD
+
+  @@map("share_activity_type")
+}
+
+model ShareActivity {
+  id          String            @id @default(cuid())
+  shareLinkId String
+  shareLink   ShareLink         @relation(fields: [shareLinkId], references: [id], onDelete: Cascade)
+  type        ShareActivityType
+  ipAddress   String?
+  createdAt   DateTime          @default(now())
+
+  @@index([shareLinkId, createdAt])
+  @@map("share_activity")
 }

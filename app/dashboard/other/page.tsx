@@ -2,11 +2,10 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UploadButton } from "@/features/files/components/upload-button";
-import { UploadDropzone } from "@/features/files/components/upload-dropzone";
 import { FileTable } from "@/features/files/components/file-table";
+import { getFileCategory } from "@/features/files/lib/category";
 
-export default async function FilesPage() {
+export default async function OtherPage() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   const files = await db.file.findMany({
@@ -14,17 +13,15 @@ export default async function FilesPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const other = files.filter((file) => getFileCategory(file) === "OTHER");
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Uploaded Files</CardTitle>
-        <UploadButton />
+        <CardTitle>Other</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <FileTable
-          files={files.map((file) => ({ ...file, size: Number(file.size) }))}
-        />
-        <UploadDropzone />
+      <CardContent>
+        <FileTable files={other.map((file) => ({ ...file, size: Number(file.size) }))} />
       </CardContent>
     </Card>
   );

@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -17,9 +18,18 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const usage = await db.file.aggregate({
+    where: { userId: session.user.id, status: "UPLOADED" },
+    _sum: { size: true },
+  });
+  const usedBytes = Number(usage._sum.size ?? BigInt(0));
+
   return (
     <SidebarProvider>
-      <AppSidebar user={{ name: session.user.name, email: session.user.email }} />
+      <AppSidebar
+        user={{ name: session.user.name, email: session.user.email }}
+        usedBytes={usedBytes}
+      />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger />

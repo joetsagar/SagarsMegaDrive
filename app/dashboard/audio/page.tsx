@@ -5,7 +5,7 @@ import { FileTable } from "@/features/files/components/file-table";
 import { FolderBrowser } from "@/features/files/components/folder-browser";
 import { getFolderViewData } from "@/features/files/lib/get-folder-view-data";
 
-export default async function VideosPage({
+export default async function AudioPage({
   searchParams,
 }: {
   searchParams: Promise<{ folderId?: string }>;
@@ -15,19 +15,19 @@ export default async function VideosPage({
 
   const { currentFolderId, breadcrumbs, subfolders, files } = await getFolderViewData({
     userId: session!.user.id,
-    category: "VIDEO",
+    category: "AUDIO",
     folderId: folderId ?? null,
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Videos</CardTitle>
+        <CardTitle>Audio</CardTitle>
       </CardHeader>
       <CardContent>
         <FolderBrowser
-          rootLabel="Videos"
-          category="VIDEO"
+          rootLabel="Audio"
+          category="AUDIO"
           currentFolderId={currentFolderId}
           breadcrumbs={breadcrumbs}
           subfolders={subfolders}
