@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { LogOut, User } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { useSignOut } from "@/features/auth/hooks/use-sign-out";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,13 +16,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function NavUser({ name, email }: { name: string; email: string }) {
-  const router = useRouter();
-
-  async function handleSignOut() {
-    await authClient.signOut();
-    router.push("/login");
-    router.refresh();
-  }
+  const { signOut } = useSignOut();
 
   return (
     <SidebarMenu>
@@ -43,7 +36,7 @@ export function NavUser({ name, email }: { name: string; email: string }) {
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-56">
-            <DropdownMenuItem onClick={handleSignOut}>
+            <DropdownMenuItem onClick={signOut}>
               <LogOut />
               Sign out
             </DropdownMenuItem>

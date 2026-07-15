@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Separator } from "@/components/ui/separator";
+import { LogoutButton } from "@/features/auth/components/logout-button";
 
 export default async function DashboardLayout({
   children,
@@ -23,6 +24,9 @@ export default async function DashboardLayout({
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-4" />
+          <div className="ml-auto">
+            <LogoutButton />
+          </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
       </SidebarInset>
