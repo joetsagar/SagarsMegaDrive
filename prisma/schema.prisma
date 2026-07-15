@@ -20,6 +20,7 @@ model User {
   sessions         Session[]
   accounts         Account[]
   twofactors       TwoFactor[]
+  files            File[]
 
   @@unique([email])
   @@map("user")
@@ -86,4 +87,27 @@ model TwoFactor {
   @@index([secret])
   @@index([userId])
   @@map("twoFactor")
+}
+
+enum FileStatus {
+  PENDING
+  UPLOADED
+
+  @@map("file_status")
+}
+
+model File {
+  id          String     @id @default(cuid())
+  key         String     @unique
+  name        String
+  size        BigInt
+  contentType String
+  status      FileStatus @default(PENDING)
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId, status])
+  @@map("file")
 }
