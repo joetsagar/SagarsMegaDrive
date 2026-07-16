@@ -21,6 +21,7 @@ export default async function ActivityPage() {
         OR: [
           { file: { userId: session!.user.id } },
           { folder: { userId: session!.user.id } },
+          { calendarUserId: session!.user.id },
         ],
       },
     },
@@ -37,7 +38,7 @@ export default async function ActivityPage() {
       <CardContent>
         {activity.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No activity yet. Share a file or folder to start seeing views, plays, and downloads here.
+            No activity yet. Share a file, folder, or your calendar to start seeing views, plays, and downloads here.
           </p>
         ) : (
           <table className="w-full table-fixed text-sm">
@@ -57,7 +58,10 @@ export default async function ActivityPage() {
             </thead>
             <tbody>
               {activity.map((entry) => {
-                const name = entry.shareLink.file?.name ?? entry.shareLink.folder?.name ?? "Unknown";
+                const name =
+                  entry.shareLink.file?.name ??
+                  entry.shareLink.folder?.name ??
+                  (entry.shareLink.calendarUserId ? "Calendar" : "Unknown");
                 return (
                   <tr key={entry.id} className="border-b last:border-0">
                     <td className="truncate py-2 pr-4">{name}</td>

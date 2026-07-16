@@ -8,19 +8,21 @@ datasource db {
 }
 
 model User {
-  id               String      @id
-  name             String
-  email            String
-  emailVerified    Boolean     @default(false)
-  image            String?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  twoFactorEnabled Boolean?    @default(false)
-  sessions         Session[]
-  accounts         Account[]
-  twofactors       TwoFactor[]
-  files            File[]
-  folders          Folder[]
+  id                 String          @id
+  name               String
+  email              String
+  emailVerified      Boolean         @default(false)
+  image              String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  twoFactorEnabled   Boolean?        @default(false)
+  sessions           Session[]
+  accounts           Account[]
+  twofactors         TwoFactor[]
+  files              File[]
+  folders            Folder[]
+  calendarEvents     CalendarEvent[]
+  calendarShareLinks ShareLink[]
 
   @@unique([email])
   @@map("user")
@@ -144,18 +146,22 @@ model Folder {
 }
 
 model ShareLink {
-  id        String          @id @default(cuid())
-  token     String          @unique
-  fileId    String?
-  file      File?           @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  folderId  String?
-  folder    Folder?         @relation(fields: [folderId], references: [id], onDelete: Cascade)
-  createdAt DateTime        @default(now())
-  expiresAt DateTime
-  activity  ShareActivity[]
+  id             String          @id @default(cuid())
+  token          String          @unique
+  fileId         String?
+  file           File?           @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  folderId       String?
+  folder         Folder?         @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  calendarUserId String?
+  calendarUser   User?           @relation(fields: [calendarUserId], references: [id], onDelete: Cascade)
+  isPrivate      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  expiresAt      DateTime
+  activity       ShareActivity[]
 
   @@index([fileId])
   @@index([folderId])
+  @@index([calendarUserId])
   @@map("share_link")
 }
 
@@ -177,4 +183,31 @@ model ShareActivity {
 
   @@index([shareLinkId, createdAt])
   @@map("share_activity")
+}
+
+enum EventCategory {
+  WORK
+  TRAVEL
+  PERSONAL
+  BANK_HOLIDAY
+
+  @@map("event_category")
+}
+
+model CalendarEvent {
+  id          String        @id @default(cuid())
+  title       String
+  location    String?
+  description String?
+  category    EventCategory @default(PERSONAL)
+  allDay      Boolean       @default(true)
+  startAt     DateTime
+  endAt       DateTime?
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId, startAt])
+  @@map("calendar_event")
 }

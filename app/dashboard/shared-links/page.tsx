@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { FolderIcon } from "lucide-react";
+import { CalendarDays, FolderIcon } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ export default async function SharedLinksPage() {
       OR: [
         { file: { userId: session!.user.id } },
         { folder: { userId: session!.user.id } },
+        { calendarUserId: session!.user.id },
       ],
     },
     include: { file: true, folder: true },
@@ -29,7 +30,7 @@ export default async function SharedLinksPage() {
       <CardContent>
         {shareLinks.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No shared links yet. Share a file or folder to create one.
+            No shared links yet. Share a file, folder, or your calendar to create one.
           </p>
         ) : (
           <table className="w-full table-fixed text-sm">
@@ -52,13 +53,19 @@ export default async function SharedLinksPage() {
             <tbody>
               {shareLinks.map((shareLink) => {
                 const isExpired = shareLink.expiresAt < new Date();
-                const name = shareLink.file?.name ?? shareLink.folder?.name ?? "Unknown";
+                const name =
+                  shareLink.file?.name ??
+                  shareLink.folder?.name ??
+                  (shareLink.calendarUserId ? "Calendar" : "Unknown");
                 return (
                   <tr key={shareLink.id} className="border-b last:border-0">
                     <td className="truncate py-2 pr-4" title={name}>
                       <span className="inline-flex items-center gap-1.5">
                         {shareLink.folder && (
                           <FolderIcon className="size-4 shrink-0 text-muted-foreground" />
+                        )}
+                        {shareLink.calendarUserId && (
+                          <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
                         )}
                         {name}
                       </span>
