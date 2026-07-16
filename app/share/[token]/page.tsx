@@ -36,7 +36,7 @@ export default async function SharePage({
         ) : isValidFolder ? (
           <SharedFolder token={token} folder={shareLink!.folder!} shareLinkId={shareLink!.id} />
         ) : (
-          <CardHeader>
+          <CardHeader className="text-center">
             <CardTitle>Link not found</CardTitle>
             <CardDescription>
               This share link is invalid or the content is no longer available.
@@ -74,7 +74,7 @@ async function SharedFile({
 
   return (
     <>
-      <CardHeader>
+      <CardHeader className="text-center">
         <CardTitle className="truncate">{file.name}</CardTitle>
         <CardDescription>
           {formatBytes(Number(file.size))} &middot; Shared {formatDate(file.createdAt)}
@@ -104,8 +104,8 @@ async function SharedFolder({
 
   return (
     <>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 truncate">
+      <CardHeader className="text-center">
+        <CardTitle className="flex items-center justify-center gap-2 truncate">
           <FolderIcon className="size-5 shrink-0 text-muted-foreground" />
           {folder.name}
         </CardTitle>

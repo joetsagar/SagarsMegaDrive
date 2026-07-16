@@ -37,12 +37,20 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { name, size, contentType } = parsed.data;
+  const { name, size, contentType, originalCreatedAt } = parsed.data;
 
   const key = `files/${session.user.id}/${randomUUID()}`;
 
   const file = await db.file.create({
-    data: { key, name, size, contentType, userId: session.user.id, status: "PENDING" },
+    data: {
+      key,
+      name,
+      size,
+      contentType,
+      userId: session.user.id,
+      status: "PENDING",
+      originalCreatedAt: originalCreatedAt ? new Date(originalCreatedAt) : null,
+    },
   });
 
   const uploadUrl = await getSignedUrl(

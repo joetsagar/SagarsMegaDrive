@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatBytes, formatDate } from "@/features/files/lib/format";
 import { AudioPlayer } from "@/features/files/components/audio-player";
 import { FileActionDialogs } from "@/features/files/components/file-action-dialogs";
+import { PhotoPreview } from "@/features/files/components/photo-preview";
 import { useFileActions } from "@/features/files/hooks/use-file-actions";
 
 type FileRow = {
@@ -14,12 +15,14 @@ type FileRow = {
   size: number;
   contentType: string;
   createdAt: Date;
+  originalCreatedAt: Date | null;
 };
 
 export function FileTable({ files }: { files: FileRow[] }) {
   const actions = useFileActions();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<{ id: string; name: string } | null>(null);
 
   if (files.length === 0) {
     return (
@@ -42,7 +45,7 @@ export function FileTable({ files }: { files: FileRow[] }) {
           <tr className="border-b text-left text-muted-foreground">
             <th className="py-2 pr-4 font-medium">Name</th>
             <th className="py-2 pr-4 pl-4 font-medium">Size</th>
-            <th className="py-2 pr-4 font-medium">Uploaded</th>
+            <th className="py-2 pr-4 font-medium">Created</th>
             <th className="py-2 font-medium">
               <span className="sr-only">Actions</span>
             </th>
@@ -72,9 +75,19 @@ export function FileTable({ files }: { files: FileRow[] }) {
                   className="border-b last:border-0"
                 >
                   <td className="py-2 pr-4">
-                    <div className="flex min-w-0 items-center gap-2">
+                    <div
+                      className={`flex min-w-0 items-center gap-2 ${isPhoto ? "cursor-zoom-in" : ""}`}
+                      onClick={() => isPhoto && setPreviewFile({ id: file.id, name: file.name })}
+                    >
                       {isAudio && (
-                        <Button variant="ghost" size="icon-sm" onClick={togglePlayback}>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePlayback();
+                          }}
+                        >
                           {isPlaying ? <Pause /> : <Play />}
                           <span className="sr-only">
                             {isPlaying ? "Pause" : "Play"} {file.name}
@@ -98,7 +111,7 @@ export function FileTable({ files }: { files: FileRow[] }) {
                     {formatBytes(file.size)}
                   </td>
                   <td className="py-2 pr-4 whitespace-nowrap text-muted-foreground">
-                    {formatDate(file.createdAt)}
+                    {formatDate(file.originalCreatedAt ?? file.createdAt)}
                   </td>
                   <td className="py-2">
                     <div className="flex justify-end gap-1">
@@ -147,6 +160,7 @@ export function FileTable({ files }: { files: FileRow[] }) {
       </table>
 
       <FileActionDialogs {...actions} />
+      <PhotoPreview file={previewFile} onClose={() => setPreviewFile(null)} />
     </>
   );
 }

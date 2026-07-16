@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -98,19 +97,20 @@ enum FileStatus {
 }
 
 model File {
-  id          String      @id @default(cuid())
-  key         String      @unique
-  name        String
-  size        BigInt
-  contentType String
-  status      FileStatus  @default(PENDING)
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  folderId    String?
-  folder      Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  shareLinks  ShareLink[]
+  id                String      @id @default(cuid())
+  key               String      @unique
+  name              String
+  size              BigInt
+  contentType       String
+  status            FileStatus  @default(PENDING)
+  userId            String
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderId          String?
+  folder            Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  originalCreatedAt DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  shareLinks        ShareLink[]
 
   @@index([userId, status])
   @@index([folderId])
@@ -126,18 +126,18 @@ enum FolderCategory {
 }
 
 model Folder {
-  id        String         @id @default(cuid())
-  name      String
-  category  FolderCategory
-  userId    String
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parentId  String?
-  parent    Folder?        @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Folder[]       @relation("FolderChildren")
-  files     File[]
-  shareLink ShareLink?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id         String         @id @default(cuid())
+  name       String
+  category   FolderCategory
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId   String?
+  parent     Folder?        @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children   Folder[]       @relation("FolderChildren")
+  files      File[]
+  shareLinks ShareLink[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   @@index([userId, category, parentId])
   @@map("folder")
@@ -146,14 +146,16 @@ model Folder {
 model ShareLink {
   id        String          @id @default(cuid())
   token     String          @unique
-  fileId    String?         @unique
+  fileId    String?
   file      File?           @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  folderId  String?         @unique
+  folderId  String?
   folder    Folder?         @relation(fields: [folderId], references: [id], onDelete: Cascade)
   createdAt DateTime        @default(now())
   expiresAt DateTime
   activity  ShareActivity[]
 
+  @@index([fileId])
+  @@index([folderId])
   @@map("share_link")
 }
 

@@ -20,17 +20,9 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const existing = await db.shareLink.findFirst({ where: { folderId: id } });
-  const isExpired = existing && existing.expiresAt < new Date();
-
-  const shareLink =
-    existing && !isExpired
-      ? existing
-      : await db.shareLink.upsert({
-          where: { folderId: id },
-          create: { folderId: id, token: generateShareToken(), expiresAt: getShareLinkExpiry() },
-          update: { token: generateShareToken(), expiresAt: getShareLinkExpiry() },
-        });
+  const shareLink = await db.shareLink.create({
+    data: { folderId: id, token: generateShareToken(), expiresAt: getShareLinkExpiry() },
+  });
 
   return NextResponse.json({ token: shareLink.token, expiresAt: shareLink.expiresAt });
 }

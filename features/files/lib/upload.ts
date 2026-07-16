@@ -28,6 +28,7 @@ export async function uploadFile(file: File, onProgress?: (percent: number) => v
       name: file.name,
       size: file.size,
       contentType: file.type || "application/octet-stream",
+      originalCreatedAt: new Date(file.lastModified).toISOString(),
     }),
   });
 

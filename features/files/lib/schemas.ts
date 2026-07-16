@@ -10,4 +10,5 @@ export const createUploadSchema = z.object({
     .positive()
     .max(MAX_UPLOAD_SIZE_BYTES, "File exceeds the 200MB upload limit"),
   contentType: z.string().min(1).max(255).default("application/octet-stream"),
+  originalCreatedAt: z.iso.datetime().optional(),
 });

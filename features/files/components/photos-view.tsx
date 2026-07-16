@@ -14,6 +14,7 @@ type FileRow = {
   size: number;
   contentType: string;
   createdAt: Date;
+  originalCreatedAt: Date | null;
 };
 
 type FolderSummary = { id: string; name: string };

@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Download, Share2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBytes, formatDate } from "@/features/files/lib/format";
 import { FileActionDialogs } from "@/features/files/components/file-action-dialogs";
+import { PhotoPreview } from "@/features/files/components/photo-preview";
 import { useFileActions } from "@/features/files/hooks/use-file-actions";
 
 type FileRow = {
@@ -12,10 +14,12 @@ type FileRow = {
   size: number;
   contentType: string;
   createdAt: Date;
+  originalCreatedAt: Date | null;
 };
 
 export function PhotoGallery({ files }: { files: FileRow[] }) {
   const actions = useFileActions();
+  const [previewFile, setPreviewFile] = useState<{ id: string; name: string } | null>(null);
 
   if (files.length === 0) {
     return (
@@ -40,7 +44,8 @@ export function PhotoGallery({ files }: { files: FileRow[] }) {
               <img
                 src={`/api/files/${file.id}/download`}
                 alt=""
-                className="size-full object-cover"
+                onClick={() => setPreviewFile({ id: file.id, name: file.name })}
+                className="size-full cursor-zoom-in object-cover"
               />
               <div className="absolute inset-x-0 bottom-0 flex justify-end gap-1 bg-gradient-to-t from-black/70 to-transparent p-1.5 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
@@ -74,7 +79,7 @@ export function PhotoGallery({ files }: { files: FileRow[] }) {
                 {file.name}
               </p>
               <p className="truncate text-xs text-muted-foreground">
-                {formatBytes(file.size)} &middot; {formatDate(file.createdAt)}
+                {formatBytes(file.size)} &middot; {formatDate(file.originalCreatedAt ?? file.createdAt)}
               </p>
             </div>
           </div>
@@ -82,6 +87,7 @@ export function PhotoGallery({ files }: { files: FileRow[] }) {
       </div>
 
       <FileActionDialogs {...actions} />
+      <PhotoPreview file={previewFile} onClose={() => setPreviewFile(null)} />
     </>
   );
 }
