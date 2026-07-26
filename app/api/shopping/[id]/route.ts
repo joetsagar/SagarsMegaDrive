@@ -24,13 +24,14 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { title, completed } = parsed.data;
+  const { title, completed, quantity } = parsed.data;
 
   const updated = await db.shoppingItem.update({
     where: { id },
     data: {
       ...(title !== undefined && { title }),
       ...(completed !== undefined && { completed }),
+      ...(quantity !== undefined && { quantity }),
     },
   });
 

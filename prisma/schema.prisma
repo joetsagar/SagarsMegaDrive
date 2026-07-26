@@ -244,6 +244,7 @@ model TodoItem {
 model ShoppingItem {
   id        String   @id @default(cuid())
   title     String
+  quantity  Int      @default(1)
   completed Boolean  @default(false)
   position  Int
   userId    String

@@ -19,9 +19,9 @@ const SAMPLE_TODOS: TodoItemDto[] = [
 ];
 
 const SAMPLE_SHOPPING: ShoppingItemDto[] = [
-  { id: "s1", title: "Milk", completed: false, position: 0 },
-  { id: "s2", title: "Eggs", completed: false, position: 1 },
-  { id: "s3", title: "Pasta", completed: true, position: 2 },
+  { id: "s1", title: "Milk", quantity: 2, completed: false, position: 0 },
+  { id: "s2", title: "Eggs", quantity: 1, completed: false, position: 1 },
+  { id: "s3", title: "Pasta", quantity: 1, completed: true, position: 2 },
 ];
 
 export default function TodosPreviewPage() {

@@ -31,6 +31,18 @@ export async function POST(request: NextRequest) {
   }
   const { title } = parsed.data;
 
+  const existing = await db.shoppingItem.findFirst({
+    where: { userId: session.user.id, completed: false, title: { equals: title, mode: "insensitive" } },
+  });
+
+  if (existing) {
+    const updated = await db.shoppingItem.update({
+      where: { id: existing.id },
+      data: { quantity: existing.quantity + 1 },
+    });
+    return NextResponse.json(updated);
+  }
+
   const last = await db.shoppingItem.findFirst({
     where: { userId: session.user.id },
     orderBy: { position: "desc" },

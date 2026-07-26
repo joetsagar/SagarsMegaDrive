@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 export type ShoppingItemDto = {
   id: string;
   title: string;
+  quantity: number;
   completed: boolean;
   position: number;
 };
@@ -23,6 +24,71 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <div className="border-b bg-muted/50 px-4 py-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
       {children}
     </div>
+  );
+}
+
+function QuantityControl({
+  quantity,
+  onChange,
+}: {
+  quantity: number;
+  onChange: (next: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(quantity));
+
+  function commit() {
+    const parsed = parseInt(draft, 10);
+    setEditing(false);
+    if (Number.isFinite(parsed) && parsed >= 1 && parsed !== quantity) {
+      onChange(Math.min(999, parsed));
+    } else {
+      setDraft(String(quantity));
+    }
+  }
+
+  if (editing) {
+    return (
+      <input
+        type="number"
+        min={1}
+        max={999}
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onFocus={(e) => e.target.select()}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit();
+          }
+          if (e.key === "Escape") {
+            setDraft(String(quantity));
+            setEditing(false);
+          }
+        }}
+        className="h-7 w-14 shrink-0 rounded border px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setDraft(String(quantity));
+        setEditing(true);
+      }}
+      className={cn(
+        "shrink-0 rounded-full px-2 py-0.5 text-sm tabular-nums",
+        quantity > 1
+          ? "bg-primary/10 font-semibold text-primary"
+          : "text-muted-foreground/40 hover:text-muted-foreground"
+      )}
+    >
+      ×{quantity}
+    </button>
   );
 }
 
@@ -77,10 +143,20 @@ export function ShoppingList({
     setDraftTitle("");
 
     if (!persist) {
-      setItems((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), title, completed: false, position: prev.length },
-      ]);
+      setItems((prev) => {
+        const existing = prev.find(
+          (i) => !i.completed && i.title.toLowerCase() === title.toLowerCase()
+        );
+        if (existing) {
+          return prev.map((i) =>
+            i.id === existing.id ? { ...i, quantity: i.quantity + 1 } : i
+          );
+        }
+        return [
+          ...prev,
+          { id: crypto.randomUUID(), title, completed: false, position: prev.length, quantity: 1 },
+        ];
+      });
       return;
     }
 
@@ -91,8 +167,14 @@ export function ShoppingList({
         body: JSON.stringify({ title }),
       });
       if (!res.ok) throw new Error();
-      const created: ShoppingItemDto = await res.json();
-      setItems((prev) => [...prev, created]);
+      const result: ShoppingItemDto = await res.json();
+      setItems((prev) => {
+        const idx = prev.findIndex((i) => i.id === result.id);
+        if (idx === -1) return [...prev, result];
+        const next = [...prev];
+        next[idx] = result;
+        return next;
+      });
     } catch {
       toast.error("Failed to add item");
     }
@@ -110,6 +192,21 @@ export function ShoppingList({
       if (!res.ok) throw new Error();
     } catch {
       toast.error("Failed to update item");
+    }
+  }
+
+  async function setQuantity(id: string, quantity: number) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity } : i)));
+    if (!persist) return;
+    try {
+      const res = await fetch(`/api/shopping/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Failed to update quantity");
     }
   }
 
@@ -150,6 +247,7 @@ export function ShoppingList({
             onDelete={() => deleteItem(item.id)}
             onMoveUp={() => reorder(item.id, -1)}
             onMoveDown={() => reorder(item.id, 1)}
+            onQuantityChange={(q) => setQuantity(item.id, q)}
           />
         ))}
         {active.map((item, index) => (
@@ -163,6 +261,7 @@ export function ShoppingList({
             onDelete={() => deleteItem(item.id)}
             onMoveUp={() => reorder(item.id, -1)}
             onMoveDown={() => reorder(item.id, 1)}
+            onQuantityChange={(q) => setQuantity(item.id, q)}
           />
         ))}
       </div>
@@ -192,6 +291,7 @@ function ShoppingRow({
   onDelete,
   onMoveUp,
   onMoveDown,
+  onQuantityChange,
 }: {
   item: ShoppingItemDto;
   index: number;
@@ -201,6 +301,7 @@ function ShoppingRow({
   onDelete: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
+  onQuantityChange: (quantity: number) => void;
 }) {
   return (
     <div className="group flex items-center gap-2 border-b px-2 py-2.5 last:border-b-0">
@@ -246,6 +347,7 @@ function ShoppingRow({
       >
         {item.title}
       </span>
+      <QuantityControl quantity={item.quantity} onChange={onQuantityChange} />
       <button
         type="button"
         onClick={onDelete}

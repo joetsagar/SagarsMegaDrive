@@ -32,9 +32,9 @@ export default async function TodosPage() {
       initialShoppingItems={shoppingItems.map((s) => ({
         id: s.id,
         title: s.title,
+        quantity: s.quantity,
         completed: s.completed,
         position: s.position,
-        createdAt: s.createdAt.toISOString(),
       }))}
     />
   );
