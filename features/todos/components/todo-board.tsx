@@ -77,7 +77,7 @@ function otherCategory(category: TodoCategory): TodoCategory {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border-b bg-muted/50 px-4 py-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+    <div className="border-b bg-muted/50 px-4 py-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
       {children}
     </div>
   );
@@ -110,7 +110,7 @@ function TodoRow({
   const color = TODO_CATEGORY_META[item.category].color;
 
   return (
-    <div className="group flex items-center gap-2 border-b px-2 py-2.5 last:border-b-0">
+    <div className="group flex items-center gap-2 border-b px-2 py-3 last:border-b-0">
       <div className="flex shrink-0 flex-col">
         <button
           type="button"
@@ -131,7 +131,7 @@ function TodoRow({
           <span className="sr-only">Move down</span>
         </button>
       </div>
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
         {index + 1}
       </span>
       <button
@@ -142,28 +142,28 @@ function TodoRow({
             ? { borderColor: color, backgroundColor: color }
             : { borderColor: `${color}80` }
         }
-        className="flex size-7 shrink-0 items-center justify-center rounded border-2 text-white"
+        className="flex size-8 shrink-0 items-center justify-center rounded border-2 text-white"
       >
-        {item.completed && <Check className="size-4" />}
+        {item.completed && <Check className="size-5" />}
         <span className="sr-only">Toggle complete</span>
       </button>
       <div className="flex min-w-0 flex-1 flex-col">
         <span
           className={cn(
-            "text-sm break-words",
+            "text-base break-words",
             item.completed && "text-muted-foreground line-through"
           )}
         >
           {item.title}
         </span>
-        <span className="text-[11px] text-muted-foreground/70">{ageLabel(item)}</span>
+        <span className="text-xs text-muted-foreground/70">{ageLabel(item)}</span>
       </div>
       {showCategoryBadge && (
         <span
           style={{ backgroundColor: `${color}26`, borderColor: color, color }}
-          className="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
+          className="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-sm"
         >
-          <Icon className="size-3" />
+          <Icon className="size-3.5" />
           {TODO_CATEGORY_META[item.category].label}
         </span>
       )}
@@ -434,12 +434,12 @@ export function TodoBoard({
                   className="flex items-center justify-between gap-2 px-4 py-2.5 text-white"
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className="size-4" />
-                    <span className="text-sm font-bold tracking-wide uppercase">
+                    <Icon className="size-5" />
+                    <span className="text-base font-bold tracking-wide uppercase">
                       {TODO_CATEGORY_META[category].label}
                     </span>
                   </div>
-                  <span className="text-xs text-white/70">{active.length} left</span>
+                  <span className="text-sm text-white/70">{active.length} left</span>
                 </div>
 
                 <div className="flex min-h-16 flex-1 flex-col">
@@ -485,8 +485,8 @@ export function TodoBoard({
         )}
       >
           <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
-            <span className="text-sm font-bold tracking-wide uppercase">All tasks</span>
-            <span className="text-xs text-background/70">{combinedActive.length} left</span>
+            <span className="text-base font-bold tracking-wide uppercase">All tasks</span>
+            <span className="text-sm text-background/70">{combinedActive.length} left</span>
           </div>
 
           <div className="flex min-h-16 flex-1 flex-col">

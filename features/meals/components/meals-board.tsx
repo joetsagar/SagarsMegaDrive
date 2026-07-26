@@ -227,6 +227,12 @@ export function MealsBoard({
 }) {
   const [meals, setMeals] = useState(initialMeals);
   const [draftTitle, setDraftTitle] = useState("");
+  const [sortMode, setSortMode] = useState<"recent" | "alpha">("recent");
+
+  const orderedMeals =
+    sortMode === "alpha"
+      ? [...meals].sort((a, b) => a.title.localeCompare(b.title))
+      : meals;
 
   async function addMeal(e: React.FormEvent) {
     e.preventDefault();
@@ -370,8 +376,27 @@ export function MealsBoard({
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-black tracking-tight uppercase sm:text-3xl">Meals</h1>
 
-      <div className="grid grid-cols-1 gap-4 landscape:grid-cols-2 lg:grid-cols-2">
-        {meals.map((meal) => (
+      <div className="flex gap-1">
+        <Button
+          type="button"
+          size="sm"
+          variant={sortMode === "recent" ? "secondary" : "ghost"}
+          onClick={() => setSortMode("recent")}
+        >
+          Date added
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={sortMode === "alpha" ? "secondary" : "ghost"}
+          onClick={() => setSortMode("alpha")}
+        >
+          A–Z
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {orderedMeals.map((meal) => (
           <MealCard
             key={meal.id}
             meal={meal}
