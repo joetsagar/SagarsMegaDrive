@@ -22,7 +22,8 @@ model User {
   files              File[]
   folders            Folder[]
   calendarEvents     CalendarEvent[]
-  calendarShareLinks ShareLink[]
+  calendarShareLinks ShareLink[]      @relation("CalendarShareLinks")
+  shoppingShareLinks ShareLink[]      @relation("ShoppingShareLinks")
   todoItems          TodoItem[]
   shoppingItems      ShoppingItem[]
   meals              Meal[]
@@ -156,7 +157,9 @@ model ShareLink {
   folderId       String?
   folder         Folder?         @relation(fields: [folderId], references: [id], onDelete: Cascade)
   calendarUserId String?
-  calendarUser   User?           @relation(fields: [calendarUserId], references: [id], onDelete: Cascade)
+  calendarUser   User?           @relation("CalendarShareLinks", fields: [calendarUserId], references: [id], onDelete: Cascade)
+  shoppingUserId String?
+  shoppingUser   User?           @relation("ShoppingShareLinks", fields: [shoppingUserId], references: [id], onDelete: Cascade)
   isPrivate      Boolean         @default(false)
   createdAt      DateTime        @default(now())
   expiresAt      DateTime
@@ -165,6 +168,7 @@ model ShareLink {
   @@index([fileId])
   @@index([folderId])
   @@index([calendarUserId])
+  @@index([shoppingUserId])
   @@map("share_link")
 }
 

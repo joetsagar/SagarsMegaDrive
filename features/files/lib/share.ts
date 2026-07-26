@@ -9,7 +9,7 @@ export function getShareLinkExpiry(): Date {
 export async function getShareLinkByToken(token: string) {
   const shareLink = await db.shareLink.findUnique({
     where: { token },
-    include: { file: true, folder: true, calendarUser: true },
+    include: { file: true, folder: true, calendarUser: true, shoppingUser: true },
   });
 
   if (!shareLink || shareLink.expiresAt < new Date()) {
@@ -41,4 +41,12 @@ export async function getCalendarShareByToken(token: string) {
     return null;
   }
   return { ...shareLink, calendarUser: shareLink.calendarUser };
+}
+
+export async function getShoppingShareByToken(token: string) {
+  const shareLink = await getShareLinkByToken(token);
+  if (!shareLink || !shareLink.shoppingUser) {
+    return null;
+  }
+  return { ...shareLink, shoppingUser: shareLink.shoppingUser };
 }

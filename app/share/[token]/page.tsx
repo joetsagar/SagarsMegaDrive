@@ -8,6 +8,7 @@ import { getShareLinkByToken } from "@/features/files/lib/share";
 import { formatBytes, formatDate } from "@/features/files/lib/format";
 import { ShareAudioPlayer } from "@/features/files/components/share-audio-player";
 import { CalendarView } from "@/features/calendar/components/calendar-view";
+import { CopyShoppingListButton } from "@/features/shopping/components/copy-shopping-list-button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +22,7 @@ export default async function SharePage({
   const isValidFile = shareLink?.file && shareLink.file.status === "UPLOADED";
   const isValidFolder = shareLink?.folder;
   const isValidCalendar = shareLink?.calendarUser;
+  const isValidShopping = shareLink?.shoppingUser;
 
   return (
     <div className="flex min-h-full flex-1 flex-col items-center justify-center gap-0 p-4">
@@ -44,6 +46,8 @@ export default async function SharePage({
             shareLinkId={shareLink!.id}
             isPrivate={shareLink!.isPrivate}
           />
+        ) : isValidShopping ? (
+          <SharedShoppingList shoppingUserId={shareLink!.shoppingUser!.id} shareLinkId={shareLink!.id} />
         ) : (
           <CardHeader className="text-center">
             <CardTitle>Link not found</CardTitle>
@@ -158,6 +162,60 @@ async function SharedCalendar({
       </CardHeader>
       <CardContent>
         <CalendarView events={events} readOnly privacyMode={isPrivate} />
+      </CardContent>
+    </>
+  );
+}
+
+async function SharedShoppingList({
+  shoppingUserId,
+  shareLinkId,
+}: {
+  shoppingUserId: string;
+  shareLinkId: string;
+}) {
+  await logView(shareLinkId);
+
+  const items = await db.shoppingItem.findMany({
+    where: { userId: shoppingUserId },
+    orderBy: { position: "asc" },
+  });
+  const active = items.filter((i) => !i.completed);
+  const inCart = items.filter((i) => i.completed);
+
+  return (
+    <>
+      <CardHeader className="text-center">
+        <CardTitle>Shared Shopping List</CardTitle>
+        <CardDescription>View only — copy it to send as a text.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {items.length === 0 ? (
+          <p className="text-center text-sm text-muted-foreground">List is empty</p>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {active.map((item) => (
+              <div key={item.id} className="flex items-center justify-between gap-2 border-b py-2">
+                <span className="text-sm">{item.title}</span>
+                {item.quantity > 1 && (
+                  <span className="text-sm font-semibold text-primary">×{item.quantity}</span>
+                )}
+              </div>
+            ))}
+            {inCart.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-2 border-b py-2 text-muted-foreground last:border-b-0"
+              >
+                <span className="text-sm line-through">{item.title}</span>
+                {item.quantity > 1 && <span className="text-sm">×{item.quantity}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+        <CopyShoppingListButton
+          items={active.map((i) => ({ title: i.title, quantity: i.quantity }))}
+        />
       </CardContent>
     </>
   );

@@ -1,11 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Copy, Plus, Share2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/features/files/lib/format";
 
 export type ShoppingItemDto = {
   id: string;
@@ -101,6 +111,39 @@ export function ShoppingList({
 }) {
   const [items, setItems] = useState(initialItems);
   const [draftTitle, setDraftTitle] = useState("");
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  async function openShare() {
+    setIsShareOpen(true);
+    setShareUrl(null);
+    setShareExpiresAt(null);
+    setIsSharing(true);
+    try {
+      const res = await fetch("/api/shopping/share", { method: "POST" });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error ?? "Failed to create share link");
+      }
+      const { token, expiresAt } = await res.json();
+      setShareUrl(`${window.location.origin}/share/${token}`);
+      setShareExpiresAt(expiresAt);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create share link");
+    } finally {
+      setIsSharing(false);
+    }
+  }
+
+  async function copyShareUrl() {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   async function persistOrder(next: ShoppingItemDto[]) {
     if (!persist) return;
@@ -228,7 +271,19 @@ export function ShoppingList({
     <div className="flex flex-col overflow-hidden rounded-lg border">
       <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
         <span className="text-sm font-bold tracking-wide uppercase">Shopping List</span>
-        <span className="text-xs text-background/70">{active.length} to buy</span>
+        <div className="flex items-center gap-2">
+          {persist && (
+            <button
+              type="button"
+              onClick={openShare}
+              className="flex items-center gap-1 text-xs text-background/70 hover:text-background"
+            >
+              <Share2 className="size-3.5" />
+              Share
+            </button>
+          )}
+          <span className="text-xs text-background/70">{active.length} to buy</span>
+        </div>
       </div>
 
       <div className="flex min-h-16 flex-1 flex-col">
@@ -278,6 +333,41 @@ export function ShoppingList({
           <span className="sr-only">Add item</span>
         </Button>
       </form>
+
+      {persist && (
+        <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Share your shopping list</DialogTitle>
+              <DialogDescription>
+                Anyone with this link can view the list and copy it — no sign-in or access to the
+                rest of your drive, and items can&apos;t be added or changed here. The link
+                expires 72 hours after it&apos;s created.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-2">
+              <Input value={shareUrl ?? "Generating link..."} readOnly />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={copyShareUrl}
+                disabled={!shareUrl || isSharing}
+              >
+                {copied ? <Check /> : <Copy />}
+                <span className="sr-only">Copy link</span>
+              </Button>
+            </div>
+            {shareExpiresAt && (
+              <p className="text-xs text-muted-foreground">
+                Expires {formatDate(new Date(shareExpiresAt))}
+              </p>
+            )}
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" />}>Close</DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
