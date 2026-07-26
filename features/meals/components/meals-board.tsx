@@ -48,6 +48,9 @@ function InlineEdit({
     return (
       <input
         autoFocus
+        spellCheck
+        autoCorrect="on"
+        autoCapitalize="sentences"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
