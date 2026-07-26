@@ -15,3 +15,7 @@ export const reorderTodosSchema = z.object({
   HOME: z.array(z.string()),
   WORK: z.array(z.string()),
 });
+
+export const reorderCombinedSchema = z.object({
+  orderedIds: z.array(z.string()),
+});

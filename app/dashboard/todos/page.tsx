@@ -6,10 +6,16 @@ import { TodoBoard } from "@/features/todos/components/todo-board";
 export default async function TodosPage() {
   const session = await auth.api.getSession({ headers: await headers() });
 
-  const todos = await db.todoItem.findMany({
-    where: { userId: session!.user.id },
-    orderBy: [{ category: "asc" }, { position: "asc" }],
-  });
+  const [todos, shoppingItems] = await Promise.all([
+    db.todoItem.findMany({
+      where: { userId: session!.user.id },
+      orderBy: [{ category: "asc" }, { position: "asc" }],
+    }),
+    db.shoppingItem.findMany({
+      where: { userId: session!.user.id },
+      orderBy: { position: "asc" },
+    }),
+  ]);
 
   return (
     <TodoBoard
@@ -19,6 +25,15 @@ export default async function TodosPage() {
         category: t.category,
         completed: t.completed,
         position: t.position,
+        combinedPosition: t.combinedPosition,
+        createdAt: t.createdAt.toISOString(),
+      }))}
+      initialShoppingItems={shoppingItems.map((s) => ({
+        id: s.id,
+        title: s.title,
+        completed: s.completed,
+        position: s.position,
+        createdAt: s.createdAt.toISOString(),
       }))}
     />
   );

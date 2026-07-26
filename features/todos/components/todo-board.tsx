@@ -20,6 +20,7 @@ import {
   TODO_CATEGORY_META,
   type TodoCategory,
 } from "@/features/todos/lib/categories";
+import { ShoppingList, type ShoppingItemDto } from "@/features/shopping/components/shopping-list";
 
 export type TodoItemDto = {
   id: string;
@@ -27,6 +28,8 @@ export type TodoItemDto = {
   category: TodoCategory;
   completed: boolean;
   position: number;
+  combinedPosition: number;
+  createdAt: string;
 };
 
 const CATEGORY_ICON: Record<TodoCategory, ComponentType<{ className?: string }>> = {
@@ -34,11 +37,23 @@ const CATEGORY_ICON: Record<TodoCategory, ComponentType<{ className?: string }>>
   WORK: Briefcase,
 };
 
-const todayFormatter = new Intl.DateTimeFormat("en-US", {
-  weekday: "long",
-  month: "long",
-  day: "numeric",
-});
+const shortDateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+
+function daysSince(iso: string): number {
+  const created = new Date(iso);
+  const createdMidnight = Date.UTC(created.getFullYear(), created.getMonth(), created.getDate());
+  const now = new Date();
+  const nowMidnight = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((nowMidnight - createdMidnight) / 86_400_000);
+}
+
+function ageLabel(item: TodoItemDto): string {
+  const added = shortDateFormatter.format(new Date(item.createdAt));
+  const days = daysSince(item.createdAt);
+  if (item.completed) return `Added ${added}`;
+  if (days <= 0) return "Added today";
+  return `Added ${added} · ${days}d outstanding`;
+}
 
 function byCategory(todos: TodoItemDto[], category: TodoCategory) {
   return todos.filter((t) => t.category === category).sort((a, b) => a.position - b.position);
@@ -50,16 +65,22 @@ function getGroup(todos: TodoItemDto[], category: TodoCategory, completed: boole
     .sort((a, b) => a.position - b.position);
 }
 
+function getCombinedGroup(todos: TodoItemDto[], completed: boolean) {
+  return todos
+    .filter((t) => t.completed === completed)
+    .sort((a, b) => a.combinedPosition - b.combinedPosition);
+}
+
+function otherCategory(category: TodoCategory): TodoCategory {
+  return category === "HOME" ? "WORK" : "HOME";
+}
+
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="border-b bg-muted/50 px-4 py-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
       {children}
     </div>
   );
-}
-
-function otherCategory(category: TodoCategory): TodoCategory {
-  return category === "HOME" ? "WORK" : "HOME";
 }
 
 function TodoRow({
@@ -116,20 +137,27 @@ function TodoRow({
       <button
         type="button"
         onClick={onToggle}
-        style={item.completed ? { borderColor: color, backgroundColor: color } : { borderColor: `${color}80` }}
+        style={
+          item.completed
+            ? { borderColor: color, backgroundColor: color }
+            : { borderColor: `${color}80` }
+        }
         className="flex size-7 shrink-0 items-center justify-center rounded border-2 text-white"
       >
         {item.completed && <Check className="size-4" />}
         <span className="sr-only">Toggle complete</span>
       </button>
-      <span
-        className={cn(
-          "flex-1 text-sm break-words",
-          item.completed && "text-muted-foreground line-through"
-        )}
-      >
-        {item.title}
-      </span>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span
+          className={cn(
+            "text-sm break-words",
+            item.completed && "text-muted-foreground line-through"
+          )}
+        >
+          {item.title}
+        </span>
+        <span className="text-[11px] text-muted-foreground/70">{ageLabel(item)}</span>
+      </div>
       {showCategoryBadge && (
         <span
           style={{ backgroundColor: `${color}26`, borderColor: color, color }}
@@ -145,7 +173,9 @@ function TodoRow({
         className="flex size-8 shrink-0 items-center justify-center text-muted-foreground/60 hover:text-foreground"
       >
         <ArrowRightLeft className="size-4" />
-        <span className="sr-only">Move to {TODO_CATEGORY_META[otherCategory(item.category)].label}</span>
+        <span className="sr-only">
+          Move to {TODO_CATEGORY_META[otherCategory(item.category)].label}
+        </span>
       </button>
       <button
         type="button"
@@ -161,14 +191,16 @@ function TodoRow({
 
 export function TodoBoard({
   initialTodos,
+  initialShoppingItems,
   persist = true,
 }: {
   initialTodos: TodoItemDto[];
+  initialShoppingItems: ShoppingItemDto[];
   /** When false, all edits stay in local state only — no network calls. Used for the unauthenticated preview. */
   persist?: boolean;
 }) {
   const [todos, setTodos] = useState(initialTodos);
-  const [view, setView] = useState<"split" | "combined">("split");
+  const [view, setView] = useState<"split" | "combined" | "shopping">("split");
   const [draftTitle, setDraftTitle] = useState<Record<TodoCategory, string>>({
     HOME: "",
     WORK: "",
@@ -184,6 +216,22 @@ export function TodoBoard({
         body: JSON.stringify({
           HOME: byCategory(next, "HOME").map((t) => t.id),
           WORK: byCategory(next, "WORK").map((t) => t.id),
+        }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Failed to save new order");
+    }
+  }
+
+  async function persistCombinedOrder(next: TodoItemDto[]) {
+    if (!persist) return;
+    try {
+      const res = await fetch("/api/todos/reorder-combined", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderedIds: [...next].sort((a, b) => a.combinedPosition - b.combinedPosition).map((t) => t.id),
         }),
       });
       if (!res.ok) throw new Error();
@@ -208,6 +256,26 @@ export function TodoBoard({
         return t;
       });
       persistOrder(next);
+      return next;
+    });
+  }
+
+  function reorderCombined(id: string, direction: -1 | 1) {
+    setTodos((prev) => {
+      const item = prev.find((t) => t.id === id);
+      if (!item) return prev;
+      const group = getCombinedGroup(prev, item.completed);
+      const idx = group.findIndex((t) => t.id === id);
+      const swapIdx = idx + direction;
+      if (swapIdx < 0 || swapIdx >= group.length) return prev;
+
+      const other = group[swapIdx];
+      const next = prev.map((t) => {
+        if (t.id === item.id) return { ...t, combinedPosition: other.combinedPosition };
+        if (t.id === other.id) return { ...t, combinedPosition: item.combinedPosition };
+        return t;
+      });
+      persistCombinedOrder(next);
       return next;
     });
   }
@@ -245,6 +313,8 @@ export function TodoBoard({
           category,
           completed: false,
           position: list.length,
+          combinedPosition: prev.length,
+          createdAt: new Date().toISOString(),
         },
       ]);
       return;
@@ -290,12 +360,14 @@ export function TodoBoard({
     }
   }
 
-  const combinedItems = [...byCategory(todos, "HOME"), ...byCategory(todos, "WORK")];
-  const combinedCompleted = [...getGroup(todos, "HOME", true), ...getGroup(todos, "WORK", true)];
-  const combinedActive = [...getGroup(todos, "HOME", false), ...getGroup(todos, "WORK", false)];
+  const combinedCompleted = getCombinedGroup(todos, true);
+  const combinedActive = getCombinedGroup(todos, false);
 
-  function renderRow(item: TodoItemDto, showCategoryBadge: boolean) {
-    const group = getGroup(todos, item.category, item.completed);
+  function renderRow(item: TodoItemDto, showCategoryBadge: boolean, mode: "category" | "combined") {
+    const group =
+      mode === "combined"
+        ? getCombinedGroup(todos, item.completed)
+        : getGroup(todos, item.category, item.completed);
     const idx = group.findIndex((t) => t.id === item.id);
     return (
       <TodoRow
@@ -307,8 +379,12 @@ export function TodoBoard({
         showCategoryBadge={showCategoryBadge}
         onToggle={() => toggleComplete(item.id, !item.completed)}
         onDelete={() => deleteTodo(item.id)}
-        onMoveUp={() => reorderWithinCategory(item.id, -1)}
-        onMoveDown={() => reorderWithinCategory(item.id, 1)}
+        onMoveUp={() =>
+          mode === "combined" ? reorderCombined(item.id, -1) : reorderWithinCategory(item.id, -1)
+        }
+        onMoveDown={() =>
+          mode === "combined" ? reorderCombined(item.id, 1) : reorderWithinCategory(item.id, 1)
+        }
         onSwitchCategory={() => switchCategory(item.id)}
       />
     );
@@ -316,14 +392,9 @@ export function TodoBoard({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <h1 className="text-2xl font-black tracking-tight uppercase sm:text-3xl">To-Do List</h1>
-        <div className="shrink-0 rounded-lg border px-3 py-1.5 text-right text-xs text-muted-foreground">
-          {todayFormatter.format(new Date())}
-        </div>
-      </div>
+      <h1 className="text-2xl font-black tracking-tight uppercase sm:text-3xl">To-Do List</h1>
 
-      <div className="flex gap-1">
+      <div className="flex flex-wrap gap-1">
         <Button
           type="button"
           size="sm"
@@ -340,15 +411,21 @@ export function TodoBoard({
         >
           Combined
         </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={view === "shopping" ? "secondary" : "ghost"}
+          onClick={() => setView("shopping")}
+        >
+          Shopping List
+        </Button>
       </div>
 
-      {view === "split" ? (
-        <div className="grid grid-cols-1 gap-4 landscape:grid-cols-2 lg:grid-cols-2">
+      <div className={cn("grid grid-cols-1 gap-4 landscape:grid-cols-2 lg:grid-cols-2", view !== "split" && "hidden")}>
           {TODO_CATEGORIES.map((category) => {
             const completed = getGroup(todos, category, true);
             const active = getGroup(todos, category, false);
             const Icon = CATEGORY_ICON[category];
-            const remaining = active.length;
 
             return (
               <div key={category} className="flex flex-col overflow-hidden rounded-lg border">
@@ -362,7 +439,7 @@ export function TodoBoard({
                       {TODO_CATEGORY_META[category].label}
                     </span>
                   </div>
-                  <span className="text-xs text-white/70">{remaining} left</span>
+                  <span className="text-xs text-white/70">{active.length} left</span>
                 </div>
 
                 <div className="flex min-h-16 flex-1 flex-col">
@@ -372,8 +449,8 @@ export function TodoBoard({
                     </p>
                   )}
                   {completed.length > 0 && <SectionLabel>Completed</SectionLabel>}
-                  {completed.map((item) => renderRow(item, false))}
-                  {active.map((item) => renderRow(item, false))}
+                  {completed.map((item) => renderRow(item, false, "category"))}
+                  {active.map((item) => renderRow(item, false, "category"))}
                 </div>
 
                 <form
@@ -400,22 +477,25 @@ export function TodoBoard({
             );
           })}
         </div>
-      ) : (
-        <div className="flex flex-col overflow-hidden rounded-lg border">
+
+      <div
+        className={cn(
+          "flex flex-col overflow-hidden rounded-lg border",
+          view !== "combined" && "hidden"
+        )}
+      >
           <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
             <span className="text-sm font-bold tracking-wide uppercase">All tasks</span>
-            <span className="text-xs text-background/70">
-              {combinedActive.length} left
-            </span>
+            <span className="text-xs text-background/70">{combinedActive.length} left</span>
           </div>
 
           <div className="flex min-h-16 flex-1 flex-col">
-            {combinedItems.length === 0 && (
+            {todos.length === 0 && (
               <p className="px-4 py-6 text-center text-sm text-muted-foreground">No tasks yet</p>
             )}
             {combinedCompleted.length > 0 && <SectionLabel>Completed</SectionLabel>}
-            {combinedCompleted.map((item) => renderRow(item, true))}
-            {combinedActive.map((item) => renderRow(item, true))}
+            {combinedCompleted.map((item) => renderRow(item, true, "combined"))}
+            {combinedActive.map((item) => renderRow(item, true, "combined"))}
           </div>
 
           <form
@@ -435,11 +515,7 @@ export function TodoBoard({
                     type="button"
                     size="sm"
                     variant="ghost"
-                    style={
-                      isSelected
-                        ? { backgroundColor: `${color}26`, color }
-                        : undefined
-                    }
+                    style={isSelected ? { backgroundColor: `${color}26`, color } : undefined}
                     onClick={() => setCombinedCategory(category)}
                   >
                     {TODO_CATEGORY_META[category].label}
@@ -461,7 +537,10 @@ export function TodoBoard({
             </Button>
           </form>
         </div>
-      )}
+
+      <div className={cn(view !== "shopping" && "hidden")}>
+        <ShoppingList initialItems={initialShoppingItems} persist={persist} />
+      </div>
     </div>
   );
 }

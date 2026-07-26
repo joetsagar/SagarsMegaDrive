@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { createTodoSchema } from "@/features/todos/lib/schemas";
+import { createShoppingItemSchema } from "@/features/shopping/lib/schemas";
 
 export async function GET() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -10,12 +10,12 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const todos = await db.todoItem.findMany({
+  const items = await db.shoppingItem.findMany({
     where: { userId: session.user.id },
-    orderBy: [{ category: "asc" }, { position: "asc" }],
+    orderBy: { position: "asc" },
   });
 
-  return NextResponse.json(todos);
+  return NextResponse.json(items);
 }
 
 export async function POST(request: NextRequest) {
@@ -25,32 +25,24 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const parsed = createTodoSchema.safeParse(body);
+  const parsed = createShoppingItemSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { title, category } = parsed.data;
+  const { title } = parsed.data;
 
-  const [lastInCategory, lastCombined] = await Promise.all([
-    db.todoItem.findFirst({
-      where: { userId: session.user.id, category },
-      orderBy: { position: "desc" },
-    }),
-    db.todoItem.findFirst({
-      where: { userId: session.user.id },
-      orderBy: { combinedPosition: "desc" },
-    }),
-  ]);
+  const last = await db.shoppingItem.findFirst({
+    where: { userId: session.user.id },
+    orderBy: { position: "desc" },
+  });
 
-  const todo = await db.todoItem.create({
+  const item = await db.shoppingItem.create({
     data: {
       title,
-      category,
-      position: lastInCategory ? lastInCategory.position + 1 : 0,
-      combinedPosition: lastCombined ? lastCombined.combinedPosition + 1 : 0,
+      position: last ? last.position + 1 : 0,
       userId: session.user.id,
     },
   });
 
-  return NextResponse.json(todo);
+  return NextResponse.json(item);
 }

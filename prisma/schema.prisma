@@ -24,6 +24,8 @@ model User {
   calendarEvents     CalendarEvent[]
   calendarShareLinks ShareLink[]
   todoItems          TodoItem[]
+  shoppingItems      ShoppingItem[]
+  meals              Meal[]
 
   @@unique([email])
   @@map("user")
@@ -221,16 +223,56 @@ enum TodoCategory {
 }
 
 model TodoItem {
-  id        String       @id @default(cuid())
-  title     String
-  category  TodoCategory
-  completed Boolean      @default(false)
-  position  Int
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id               String       @id @default(cuid())
+  title            String
+  category         TodoCategory
+  completed        Boolean      @default(false)
+  position         Int
+  combinedPosition Int          @default(0)
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   @@index([userId, category, position])
+  @@index([userId, combinedPosition])
   @@map("todo_item")
+}
+
+model ShoppingItem {
+  id        String   @id @default(cuid())
+  title     String
+  completed Boolean  @default(false)
+  position  Int
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, position])
+  @@map("shopping_item")
+}
+
+model Meal {
+  id          String           @id @default(cuid())
+  title       String
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredients MealIngredient[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([userId, createdAt])
+  @@map("meal")
+}
+
+model MealIngredient {
+  id        String   @id @default(cuid())
+  title     String
+  mealId    String
+  meal      Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([mealId])
+  @@map("meal_ingredient")
 }
