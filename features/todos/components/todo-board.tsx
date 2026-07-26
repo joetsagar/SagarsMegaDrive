@@ -72,6 +72,7 @@ function TodoRow({
   onSwitchCategory: () => void;
 }) {
   const Icon = CATEGORY_ICON[item.category];
+  const color = TODO_CATEGORY_META[item.category].color;
 
   return (
     <div className="group flex items-center gap-2 border-b px-2 py-2.5 last:border-b-0">
@@ -101,10 +102,8 @@ function TodoRow({
       <button
         type="button"
         onClick={onToggle}
-        className={cn(
-          "flex size-7 shrink-0 items-center justify-center rounded border-2 border-foreground/50",
-          item.completed && "border-foreground bg-foreground text-background"
-        )}
+        style={item.completed ? { borderColor: color, backgroundColor: color } : { borderColor: `${color}80` }}
+        className="flex size-7 shrink-0 items-center justify-center rounded border-2 text-white"
       >
         {item.completed && <Check className="size-4" />}
         <span className="sr-only">Toggle complete</span>
@@ -118,7 +117,10 @@ function TodoRow({
         {item.title}
       </span>
       {showCategoryBadge && (
-        <span className="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+        <span
+          style={{ backgroundColor: `${color}26`, borderColor: color, color }}
+          className="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
+        >
           <Icon className="size-3" />
           {TODO_CATEGORY_META[item.category].label}
         </span>
@@ -311,14 +313,17 @@ export function TodoBoard({
 
             return (
               <div key={category} className="flex flex-col overflow-hidden rounded-lg border">
-                <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
+                <div
+                  style={{ backgroundColor: TODO_CATEGORY_META[category].color }}
+                  className="flex items-center justify-between gap-2 px-4 py-2.5 text-white"
+                >
                   <div className="flex items-center gap-2">
                     <Icon className="size-4" />
                     <span className="text-sm font-bold tracking-wide uppercase">
                       {TODO_CATEGORY_META[category].label}
                     </span>
                   </div>
-                  <span className="text-xs text-background/70">{remaining} left</span>
+                  <span className="text-xs text-white/70">{remaining} left</span>
                 </div>
 
                 <div className="flex min-h-16 flex-1 flex-col">
@@ -409,17 +414,26 @@ export function TodoBoard({
             className="flex items-center gap-2 border-t bg-muted/30 p-2"
           >
             <div className="flex shrink-0 gap-1">
-              {TODO_CATEGORIES.map((category) => (
-                <Button
-                  key={category}
-                  type="button"
-                  size="sm"
-                  variant={combinedCategory === category ? "secondary" : "ghost"}
-                  onClick={() => setCombinedCategory(category)}
-                >
-                  {TODO_CATEGORY_META[category].label}
-                </Button>
-              ))}
+              {TODO_CATEGORIES.map((category) => {
+                const isSelected = combinedCategory === category;
+                const color = TODO_CATEGORY_META[category].color;
+                return (
+                  <Button
+                    key={category}
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    style={
+                      isSelected
+                        ? { backgroundColor: `${color}26`, color }
+                        : undefined
+                    }
+                    onClick={() => setCombinedCategory(category)}
+                  >
+                    {TODO_CATEGORY_META[category].label}
+                  </Button>
+                );
+              })}
             </div>
             <Input
               value={draftTitle[combinedCategory]}
