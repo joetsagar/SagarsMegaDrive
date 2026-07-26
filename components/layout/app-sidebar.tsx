@@ -37,6 +37,7 @@ import {
 import { cn } from "@/lib/utils";
 import { NavUser } from "@/components/layout/nav-user";
 import { StorageMeter, STORAGE_LIMIT_BYTES } from "@/features/files/components/storage-meter";
+import { useFullScreen } from "@/components/layout/fullscreen-provider";
 
 const topItems = [
   { title: "Home", url: "/dashboard", icon: Home },
@@ -69,6 +70,9 @@ export function AppSidebar({
   const pathname = usePathname();
   const isMediaActive = mediaItems.some((item) => pathname.startsWith(item.url));
   const [isMediaOpen, setIsMediaOpen] = useState(isMediaActive);
+  const { isFullScreen } = useFullScreen();
+
+  if (isFullScreen) return null;
 
   return (
     <Sidebar collapsible="icon">

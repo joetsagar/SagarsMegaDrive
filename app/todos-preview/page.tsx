@@ -1,5 +1,6 @@
 import { TodoBoard, type TodoItemDto } from "@/features/todos/components/todo-board";
 import type { ShoppingItemDto } from "@/features/shopping/components/shopping-list";
+import { FullScreenProvider } from "@/components/layout/fullscreen-provider";
 
 function daysAgo(days: number): string {
   const d = new Date();
@@ -26,12 +27,14 @@ const SAMPLE_SHOPPING: ShoppingItemDto[] = [
 
 export default function TodosPreviewPage() {
   return (
-    <div className="mx-auto flex max-w-5xl flex-1 flex-col gap-4 p-4">
-      <p className="rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">
-        Preview only — no login required, nothing here is saved. This is the same To-Do List
-        component that lives in the dashboard.
-      </p>
-      <TodoBoard initialTodos={SAMPLE_TODOS} initialShoppingItems={SAMPLE_SHOPPING} persist={false} />
-    </div>
+    <FullScreenProvider>
+      <div className="mx-auto flex max-w-5xl flex-1 flex-col gap-4 p-4">
+        <p className="rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">
+          Preview only — no login required, nothing here is saved. This is the same To-Do List
+          component that lives in the dashboard.
+        </p>
+        <TodoBoard initialTodos={SAMPLE_TODOS} initialShoppingItems={SAMPLE_SHOPPING} persist={false} />
+      </div>
+    </FullScreenProvider>
   );
 }

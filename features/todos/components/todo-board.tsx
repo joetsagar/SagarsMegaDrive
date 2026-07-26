@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InlineEdit } from "@/components/ui/inline-edit";
+import { useFullScreen } from "@/components/layout/fullscreen-provider";
 import { cn } from "@/lib/utils";
 import {
   TODO_CATEGORIES,
@@ -270,7 +271,7 @@ export function TodoBoard({
     WORK: "",
   });
   const [combinedCategory, setCombinedCategory] = useState<TodoCategory>("HOME");
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const { isFullScreen, setIsFullScreen } = useFullScreen();
 
   useEffect(() => {
     if (!isFullScreen) return;
@@ -279,7 +280,11 @@ export function TodoBoard({
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFullScreen]);
+  }, [isFullScreen, setIsFullScreen]);
+
+  // Always leave full-screen mode when this page unmounts, so the sidebar
+  // doesn't stay hidden after navigating away.
+  useEffect(() => () => setIsFullScreen(false), [setIsFullScreen]);
 
   async function persistOrder(next: TodoItemDto[]) {
     if (!persist) return;
@@ -523,19 +528,14 @@ export function TodoBoard({
   }
 
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-4",
-        isFullScreen && "fixed inset-0 z-50 overflow-y-auto bg-background p-4"
-      )}
-    >
+    <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-4">
         <h1 className="text-2xl font-black tracking-tight uppercase sm:text-3xl">To-Do List</h1>
         <Button
           type="button"
           size="sm"
           variant="outline"
-          onClick={() => setIsFullScreen((v) => !v)}
+          onClick={() => setIsFullScreen(!isFullScreen)}
         >
           {isFullScreen ? <Minimize2 /> : <Maximize2 />}
           {isFullScreen ? "Exit full screen" : "Full screen"}
