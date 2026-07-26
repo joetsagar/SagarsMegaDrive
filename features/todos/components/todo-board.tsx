@@ -44,6 +44,20 @@ function byCategory(todos: TodoItemDto[], category: TodoCategory) {
   return todos.filter((t) => t.category === category).sort((a, b) => a.position - b.position);
 }
 
+function getGroup(todos: TodoItemDto[], category: TodoCategory, completed: boolean) {
+  return todos
+    .filter((t) => t.category === category && t.completed === completed)
+    .sort((a, b) => a.position - b.position);
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="border-b bg-muted/50 px-4 py-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+      {children}
+    </div>
+  );
+}
+
 function otherCategory(category: TodoCategory): TodoCategory {
   return category === "HOME" ? "WORK" : "HOME";
 }
@@ -182,15 +196,17 @@ export function TodoBoard({
     setTodos((prev) => {
       const item = prev.find((t) => t.id === id);
       if (!item) return prev;
-      const list = byCategory(prev, item.category);
-      const idx = list.findIndex((t) => t.id === id);
+      const group = getGroup(prev, item.category, item.completed);
+      const idx = group.findIndex((t) => t.id === id);
       const swapIdx = idx + direction;
-      if (swapIdx < 0 || swapIdx >= list.length) return prev;
+      if (swapIdx < 0 || swapIdx >= group.length) return prev;
 
-      [list[idx], list[swapIdx]] = [list[swapIdx], list[idx]];
-      const reindexed = list.map((t, i) => ({ ...t, position: i }));
-      const others = prev.filter((t) => t.category !== item.category);
-      const next = [...others, ...reindexed];
+      const other = group[swapIdx];
+      const next = prev.map((t) => {
+        if (t.id === item.id) return { ...t, position: other.position };
+        if (t.id === other.id) return { ...t, position: item.position };
+        return t;
+      });
       persistOrder(next);
       return next;
     });
@@ -275,6 +291,28 @@ export function TodoBoard({
   }
 
   const combinedItems = [...byCategory(todos, "HOME"), ...byCategory(todos, "WORK")];
+  const combinedCompleted = [...getGroup(todos, "HOME", true), ...getGroup(todos, "WORK", true)];
+  const combinedActive = [...getGroup(todos, "HOME", false), ...getGroup(todos, "WORK", false)];
+
+  function renderRow(item: TodoItemDto, showCategoryBadge: boolean) {
+    const group = getGroup(todos, item.category, item.completed);
+    const idx = group.findIndex((t) => t.id === item.id);
+    return (
+      <TodoRow
+        key={item.id}
+        item={item}
+        index={idx}
+        isFirst={idx === 0}
+        isLast={idx === group.length - 1}
+        showCategoryBadge={showCategoryBadge}
+        onToggle={() => toggleComplete(item.id, !item.completed)}
+        onDelete={() => deleteTodo(item.id)}
+        onMoveUp={() => reorderWithinCategory(item.id, -1)}
+        onMoveDown={() => reorderWithinCategory(item.id, 1)}
+        onSwitchCategory={() => switchCategory(item.id)}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -307,9 +345,10 @@ export function TodoBoard({
       {view === "split" ? (
         <div className="grid grid-cols-1 gap-4 landscape:grid-cols-2 lg:grid-cols-2">
           {TODO_CATEGORIES.map((category) => {
-            const items = byCategory(todos, category);
+            const completed = getGroup(todos, category, true);
+            const active = getGroup(todos, category, false);
             const Icon = CATEGORY_ICON[category];
-            const remaining = items.filter((t) => !t.completed).length;
+            const remaining = active.length;
 
             return (
               <div key={category} className="flex flex-col overflow-hidden rounded-lg border">
@@ -327,26 +366,14 @@ export function TodoBoard({
                 </div>
 
                 <div className="flex min-h-16 flex-1 flex-col">
-                  {items.length === 0 && (
+                  {completed.length === 0 && active.length === 0 && (
                     <p className="px-4 py-6 text-center text-sm text-muted-foreground">
                       No tasks yet
                     </p>
                   )}
-                  {items.map((item, index) => (
-                    <TodoRow
-                      key={item.id}
-                      item={item}
-                      index={index}
-                      isFirst={index === 0}
-                      isLast={index === items.length - 1}
-                      showCategoryBadge={false}
-                      onToggle={() => toggleComplete(item.id, !item.completed)}
-                      onDelete={() => deleteTodo(item.id)}
-                      onMoveUp={() => reorderWithinCategory(item.id, -1)}
-                      onMoveDown={() => reorderWithinCategory(item.id, 1)}
-                      onSwitchCategory={() => switchCategory(item.id)}
-                    />
-                  ))}
+                  {completed.length > 0 && <SectionLabel>Completed</SectionLabel>}
+                  {completed.map((item) => renderRow(item, false))}
+                  {active.map((item) => renderRow(item, false))}
                 </div>
 
                 <form
@@ -378,7 +405,7 @@ export function TodoBoard({
           <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
             <span className="text-sm font-bold tracking-wide uppercase">All tasks</span>
             <span className="text-xs text-background/70">
-              {combinedItems.filter((t) => !t.completed).length} left
+              {combinedActive.length} left
             </span>
           </div>
 
@@ -386,24 +413,9 @@ export function TodoBoard({
             {combinedItems.length === 0 && (
               <p className="px-4 py-6 text-center text-sm text-muted-foreground">No tasks yet</p>
             )}
-            {TODO_CATEGORIES.map((category) => {
-              const items = byCategory(todos, category);
-              return items.map((item, index) => (
-                <TodoRow
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  isFirst={index === 0}
-                  isLast={index === items.length - 1}
-                  showCategoryBadge
-                  onToggle={() => toggleComplete(item.id, !item.completed)}
-                  onDelete={() => deleteTodo(item.id)}
-                  onMoveUp={() => reorderWithinCategory(item.id, -1)}
-                  onMoveDown={() => reorderWithinCategory(item.id, 1)}
-                  onSwitchCategory={() => switchCategory(item.id)}
-                />
-              ));
-            })}
+            {combinedCompleted.length > 0 && <SectionLabel>Completed</SectionLabel>}
+            {combinedCompleted.map((item) => renderRow(item, true))}
+            {combinedActive.map((item) => renderRow(item, true))}
           </div>
 
           <form
