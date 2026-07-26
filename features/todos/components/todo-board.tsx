@@ -1,7 +1,16 @@
 "use client";
 
-import { useState, type DragEvent, type ComponentType } from "react";
-import { Briefcase, Check, GripVertical, Home as HomeIcon, Plus, Trash2 } from "lucide-react";
+import { useState, type ComponentType } from "react";
+import {
+  ArrowRightLeft,
+  Briefcase,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Home as HomeIcon,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,16 +44,123 @@ function byCategory(todos: TodoItemDto[], category: TodoCategory) {
   return todos.filter((t) => t.category === category).sort((a, b) => a.position - b.position);
 }
 
-export function TodoBoard({ initialTodos }: { initialTodos: TodoItemDto[] }) {
+function otherCategory(category: TodoCategory): TodoCategory {
+  return category === "HOME" ? "WORK" : "HOME";
+}
+
+function TodoRow({
+  item,
+  index,
+  isFirst,
+  isLast,
+  showCategoryBadge,
+  onToggle,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  onSwitchCategory,
+}: {
+  item: TodoItemDto;
+  index: number;
+  isFirst: boolean;
+  isLast: boolean;
+  showCategoryBadge: boolean;
+  onToggle: () => void;
+  onDelete: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onSwitchCategory: () => void;
+}) {
+  const Icon = CATEGORY_ICON[item.category];
+
+  return (
+    <div className="group flex items-center gap-2 border-b px-2 py-2.5 last:border-b-0">
+      <div className="flex shrink-0 flex-col">
+        <button
+          type="button"
+          onClick={onMoveUp}
+          disabled={isFirst}
+          className="flex size-6 items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-20"
+        >
+          <ChevronUp className="size-4" />
+          <span className="sr-only">Move up</span>
+        </button>
+        <button
+          type="button"
+          onClick={onMoveDown}
+          disabled={isLast}
+          className="flex size-6 items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-20"
+        >
+          <ChevronDown className="size-4" />
+          <span className="sr-only">Move down</span>
+        </button>
+      </div>
+      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+        {index + 1}
+      </span>
+      <button
+        type="button"
+        onClick={onToggle}
+        className={cn(
+          "flex size-7 shrink-0 items-center justify-center rounded border-2 border-foreground/50",
+          item.completed && "border-foreground bg-foreground text-background"
+        )}
+      >
+        {item.completed && <Check className="size-4" />}
+        <span className="sr-only">Toggle complete</span>
+      </button>
+      <span
+        className={cn(
+          "flex-1 text-sm break-words",
+          item.completed && "text-muted-foreground line-through"
+        )}
+      >
+        {item.title}
+      </span>
+      {showCategoryBadge && (
+        <span className="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+          <Icon className="size-3" />
+          {TODO_CATEGORY_META[item.category].label}
+        </span>
+      )}
+      <button
+        type="button"
+        onClick={onSwitchCategory}
+        className="flex size-8 shrink-0 items-center justify-center text-muted-foreground/60 hover:text-foreground"
+      >
+        <ArrowRightLeft className="size-4" />
+        <span className="sr-only">Move to {TODO_CATEGORY_META[otherCategory(item.category)].label}</span>
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        className="flex size-8 shrink-0 items-center justify-center text-muted-foreground/60 hover:text-destructive"
+      >
+        <Trash2 className="size-4" />
+        <span className="sr-only">Delete task</span>
+      </button>
+    </div>
+  );
+}
+
+export function TodoBoard({
+  initialTodos,
+  persist = true,
+}: {
+  initialTodos: TodoItemDto[];
+  /** When false, all edits stay in local state only — no network calls. Used for the unauthenticated preview. */
+  persist?: boolean;
+}) {
   const [todos, setTodos] = useState(initialTodos);
+  const [view, setView] = useState<"split" | "combined">("split");
   const [draftTitle, setDraftTitle] = useState<Record<TodoCategory, string>>({
     HOME: "",
     WORK: "",
   });
-  const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [combinedCategory, setCombinedCategory] = useState<TodoCategory>("HOME");
 
   async function persistOrder(next: TodoItemDto[]) {
+    if (!persist) return;
     try {
       const res = await fetch("/api/todos/reorder", {
         method: "POST",
@@ -60,42 +176,62 @@ export function TodoBoard({ initialTodos }: { initialTodos: TodoItemDto[] }) {
     }
   }
 
-  function moveItem(id: string, targetCategory: TodoCategory, targetId: string | null) {
+  function reorderWithinCategory(id: string, direction: -1 | 1) {
     setTodos((prev) => {
       const item = prev.find((t) => t.id === id);
       if (!item) return prev;
-      if (item.category === targetCategory && item.id === targetId) return prev;
+      const list = byCategory(prev, item.category);
+      const idx = list.findIndex((t) => t.id === id);
+      const swapIdx = idx + direction;
+      if (swapIdx < 0 || swapIdx >= list.length) return prev;
 
-      const withoutItem = prev.filter((t) => t.id !== id);
-      const targetList = byCategory(withoutItem, targetCategory);
-      const otherList = withoutItem.filter((t) => t.category !== targetCategory);
-
-      let insertAt = targetList.length;
-      if (targetId) {
-        const idx = targetList.findIndex((t) => t.id === targetId);
-        if (idx !== -1) insertAt = idx;
-      }
-      targetList.splice(insertAt, 0, { ...item, category: targetCategory });
-
-      const reindexed = targetList.map((t, i) => ({ ...t, position: i }));
-      const next = [...otherList, ...reindexed];
+      [list[idx], list[swapIdx]] = [list[swapIdx], list[idx]];
+      const reindexed = list.map((t, i) => ({ ...t, position: i }));
+      const others = prev.filter((t) => t.category !== item.category);
+      const next = [...others, ...reindexed];
       persistOrder(next);
       return next;
     });
   }
 
-  function handleDrop(e: DragEvent, targetCategory: TodoCategory, targetId: string | null) {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOverId(null);
-    const id = e.dataTransfer.getData("text/plain");
-    if (id) moveItem(id, targetCategory, targetId);
+  function switchCategory(id: string) {
+    setTodos((prev) => {
+      const item = prev.find((t) => t.id === id);
+      if (!item) return prev;
+      const target = otherCategory(item.category);
+
+      const sourceList = byCategory(prev, item.category)
+        .filter((t) => t.id !== id)
+        .map((t, i) => ({ ...t, position: i }));
+      const targetList = byCategory(prev, target);
+      const moved = { ...item, category: target, position: targetList.length };
+
+      const next = [...sourceList, ...targetList, moved];
+      persistOrder(next);
+      return next;
+    });
   }
 
   async function addTodo(category: TodoCategory) {
     const title = draftTitle[category].trim();
     if (!title) return;
     setDraftTitle((prev) => ({ ...prev, [category]: "" }));
+
+    if (!persist) {
+      const list = byCategory(todos, category);
+      setTodos((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          title,
+          category,
+          completed: false,
+          position: list.length,
+        },
+      ]);
+      return;
+    }
+
     try {
       const res = await fetch("/api/todos", {
         method: "POST",
@@ -112,6 +248,7 @@ export function TodoBoard({ initialTodos }: { initialTodos: TodoItemDto[] }) {
 
   async function toggleComplete(id: string, completed: boolean) {
     setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, completed } : t)));
+    if (!persist) return;
     try {
       const res = await fetch(`/api/todos/${id}`, {
         method: "PATCH",
@@ -126,6 +263,7 @@ export function TodoBoard({ initialTodos }: { initialTodos: TodoItemDto[] }) {
 
   async function deleteTodo(id: string) {
     setTodos((prev) => prev.filter((t) => t.id !== id));
+    if (!persist) return;
     try {
       const res = await fetch(`/api/todos/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
@@ -134,126 +272,170 @@ export function TodoBoard({ initialTodos }: { initialTodos: TodoItemDto[] }) {
     }
   }
 
+  const combinedItems = [...byCategory(todos, "HOME"), ...byCategory(todos, "WORK")];
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <h1 className="text-2xl font-black tracking-tight uppercase sm:text-3xl">To-Do List</h1>
         <div className="shrink-0 rounded-lg border px-3 py-1.5 text-right text-xs text-muted-foreground">
           {todayFormatter.format(new Date())}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 landscape:grid-cols-2 lg:grid-cols-2">
-        {TODO_CATEGORIES.map((category) => {
-          const items = byCategory(todos, category);
-          const Icon = CATEGORY_ICON[category];
-          const remaining = items.filter((t) => !t.completed).length;
-
-          return (
-            <div key={category} className="flex flex-col overflow-hidden rounded-lg border">
-              <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
-                <div className="flex items-center gap-2">
-                  <Icon className="size-4" />
-                  <span className="text-sm font-bold tracking-wide uppercase">
-                    {TODO_CATEGORY_META[category].label}
-                  </span>
-                </div>
-                <span className="text-xs text-background/70">{remaining} left</span>
-              </div>
-
-              <div
-                className="flex min-h-16 flex-1 flex-col"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, category, null)}
-              >
-                {items.length === 0 && (
-                  <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-                    No tasks yet
-                  </p>
-                )}
-                {items.map((item, index) => (
-                  <div
-                    key={item.id}
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData("text/plain", item.id);
-                      setDraggedId(item.id);
-                    }}
-                    onDragEnd={() => {
-                      setDraggedId(null);
-                      setDragOverId(null);
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDragOverId(item.id);
-                    }}
-                    onDrop={(e) => handleDrop(e, category, item.id)}
-                    className={cn(
-                      "group flex items-center gap-2 border-b px-2 py-3 last:border-b-0",
-                      dragOverId === item.id && draggedId !== item.id && "bg-primary/10",
-                      draggedId === item.id && "opacity-40"
-                    )}
-                  >
-                    <GripVertical className="size-5 shrink-0 cursor-grab text-muted-foreground active:cursor-grabbing" />
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                      {index + 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => toggleComplete(item.id, !item.completed)}
-                      className={cn(
-                        "flex size-7 shrink-0 items-center justify-center rounded border-2 border-foreground/50",
-                        item.completed && "border-foreground bg-foreground text-background"
-                      )}
-                    >
-                      {item.completed && <Check className="size-4" />}
-                      <span className="sr-only">Toggle complete</span>
-                    </button>
-                    <span
-                      className={cn(
-                        "flex-1 text-sm break-words",
-                        item.completed && "text-muted-foreground line-through"
-                      )}
-                    >
-                      {item.title}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => deleteTodo(item.id)}
-                      className="flex size-8 shrink-0 items-center justify-center text-muted-foreground/60 hover:text-destructive"
-                    >
-                      <Trash2 className="size-4" />
-                      <span className="sr-only">Delete task</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  addTodo(category);
-                }}
-                className="flex items-center gap-2 border-t bg-muted/30 p-2"
-              >
-                <Input
-                  value={draftTitle[category]}
-                  onChange={(e) =>
-                    setDraftTitle((prev) => ({ ...prev, [category]: e.target.value }))
-                  }
-                  placeholder={`Add a ${TODO_CATEGORY_META[category].label.toLowerCase()} task`}
-                  className="h-9"
-                />
-                <Button type="submit" size="icon-sm">
-                  <Plus />
-                  <span className="sr-only">Add task</span>
-                </Button>
-              </form>
-            </div>
-          );
-        })}
+      <div className="flex gap-1">
+        <Button
+          type="button"
+          size="sm"
+          variant={view === "split" ? "secondary" : "ghost"}
+          onClick={() => setView("split")}
+        >
+          Home &amp; Work
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={view === "combined" ? "secondary" : "ghost"}
+          onClick={() => setView("combined")}
+        >
+          Combined
+        </Button>
       </div>
+
+      {view === "split" ? (
+        <div className="grid grid-cols-1 gap-4 landscape:grid-cols-2 lg:grid-cols-2">
+          {TODO_CATEGORIES.map((category) => {
+            const items = byCategory(todos, category);
+            const Icon = CATEGORY_ICON[category];
+            const remaining = items.filter((t) => !t.completed).length;
+
+            return (
+              <div key={category} className="flex flex-col overflow-hidden rounded-lg border">
+                <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
+                  <div className="flex items-center gap-2">
+                    <Icon className="size-4" />
+                    <span className="text-sm font-bold tracking-wide uppercase">
+                      {TODO_CATEGORY_META[category].label}
+                    </span>
+                  </div>
+                  <span className="text-xs text-background/70">{remaining} left</span>
+                </div>
+
+                <div className="flex min-h-16 flex-1 flex-col">
+                  {items.length === 0 && (
+                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+                      No tasks yet
+                    </p>
+                  )}
+                  {items.map((item, index) => (
+                    <TodoRow
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      isFirst={index === 0}
+                      isLast={index === items.length - 1}
+                      showCategoryBadge={false}
+                      onToggle={() => toggleComplete(item.id, !item.completed)}
+                      onDelete={() => deleteTodo(item.id)}
+                      onMoveUp={() => reorderWithinCategory(item.id, -1)}
+                      onMoveDown={() => reorderWithinCategory(item.id, 1)}
+                      onSwitchCategory={() => switchCategory(item.id)}
+                    />
+                  ))}
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    addTodo(category);
+                  }}
+                  className="flex items-center gap-2 border-t bg-muted/30 p-2"
+                >
+                  <Input
+                    value={draftTitle[category]}
+                    onChange={(e) =>
+                      setDraftTitle((prev) => ({ ...prev, [category]: e.target.value }))
+                    }
+                    placeholder={`Add a ${TODO_CATEGORY_META[category].label.toLowerCase()} task`}
+                    className="h-9"
+                  />
+                  <Button type="submit" size="icon-sm">
+                    <Plus />
+                    <span className="sr-only">Add task</span>
+                  </Button>
+                </form>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-col overflow-hidden rounded-lg border">
+          <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
+            <span className="text-sm font-bold tracking-wide uppercase">All tasks</span>
+            <span className="text-xs text-background/70">
+              {combinedItems.filter((t) => !t.completed).length} left
+            </span>
+          </div>
+
+          <div className="flex min-h-16 flex-1 flex-col">
+            {combinedItems.length === 0 && (
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">No tasks yet</p>
+            )}
+            {TODO_CATEGORIES.map((category) => {
+              const items = byCategory(todos, category);
+              return items.map((item, index) => (
+                <TodoRow
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  isFirst={index === 0}
+                  isLast={index === items.length - 1}
+                  showCategoryBadge
+                  onToggle={() => toggleComplete(item.id, !item.completed)}
+                  onDelete={() => deleteTodo(item.id)}
+                  onMoveUp={() => reorderWithinCategory(item.id, -1)}
+                  onMoveDown={() => reorderWithinCategory(item.id, 1)}
+                  onSwitchCategory={() => switchCategory(item.id)}
+                />
+              ));
+            })}
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              addTodo(combinedCategory);
+            }}
+            className="flex items-center gap-2 border-t bg-muted/30 p-2"
+          >
+            <div className="flex shrink-0 gap-1">
+              {TODO_CATEGORIES.map((category) => (
+                <Button
+                  key={category}
+                  type="button"
+                  size="sm"
+                  variant={combinedCategory === category ? "secondary" : "ghost"}
+                  onClick={() => setCombinedCategory(category)}
+                >
+                  {TODO_CATEGORY_META[category].label}
+                </Button>
+              ))}
+            </div>
+            <Input
+              value={draftTitle[combinedCategory]}
+              onChange={(e) =>
+                setDraftTitle((prev) => ({ ...prev, [combinedCategory]: e.target.value }))
+              }
+              placeholder="Add a task"
+              className="h-9"
+            />
+            <Button type="submit" size="icon-sm">
+              <Plus />
+              <span className="sr-only">Add task</span>
+            </Button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
