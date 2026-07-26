@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { ChevronRight, FolderIcon, FolderPlus, Loader2, Share2, Trash2 } from "lucide-react";
+import { ChevronRight, FolderIcon, FolderPlus, Loader2, Share2, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,48 @@ export function FolderBrowser({
   const [newFolderName, setNewFolderName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [draggingOverId, setDraggingOverId] = useState<string | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) =>
+      prev.size === subfolders.length ? new Set() : new Set(subfolders.map((f) => f.id))
+    );
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
+  async function confirmBulkDelete() {
+    setIsBulkDeleting(true);
+    try {
+      const results = await Promise.all(
+        Array.from(selectedIds).map((id) => fetch(`/api/folders/${id}`, { method: "DELETE" }))
+      );
+      if (results.some((res) => !res.ok)) throw new Error();
+      toast.success(`Deleted ${selectedIds.size} folder${selectedIds.size === 1 ? "" : "s"}`);
+      setIsBulkDeleteOpen(false);
+      exitSelectMode();
+      router.refresh();
+    } catch {
+      toast.error("Failed to delete some folders");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  }
 
   function navigateTo(folderId: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -155,52 +197,110 @@ export function FolderBrowser({
       </div>
 
       {subfolders.length > 0 && (
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
-          {subfolders.map((folder) => (
-            <div
-              key={folder.id}
-              onClick={() => navigateTo(folder.id)}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDraggingOverId(folder.id);
-              }}
-              onDragLeave={() => setDraggingOverId(null)}
-              onDrop={(e) => handleDrop(folder.id, e)}
-              className={cn(
-                "group relative flex cursor-pointer flex-col items-center gap-1 rounded-lg border p-3 text-center transition-colors",
-                draggingOverId === folder.id
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:bg-muted/50"
-              )}
-            >
-              <div
-                className="absolute top-1 right-1 hidden gap-0.5 group-hover:flex"
-                onClick={(e) => e.stopPropagation()}
+        <>
+          <div className="flex items-center justify-between gap-2">
+            {selectMode ? (
+              <>
+                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.size === subfolders.length}
+                    onChange={toggleSelectAll}
+                    className="size-4"
+                  />
+                  {selectedIds.size > 0 ? `${selectedIds.size} selected` : "Select all"}
+                </label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={selectedIds.size === 0}
+                    onClick={() => setIsBulkDeleteOpen(true)}
+                  >
+                    <Trash2 />
+                    Delete{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={exitSelectMode}>
+                    <X />
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-auto"
+                onClick={() => setSelectMode(true)}
               >
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => actions.openShare({ id: folder.id, name: folder.name })}
+                Select
+              </Button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
+            {subfolders.map((folder) => {
+              const isSelected = selectedIds.has(folder.id);
+              return (
+                <div
+                  key={folder.id}
+                  onClick={() => (selectMode ? toggleSelected(folder.id) : navigateTo(folder.id))}
+                  onDragOver={(e) => {
+                    if (selectMode) return;
+                    e.preventDefault();
+                    setDraggingOverId(folder.id);
+                  }}
+                  onDragLeave={() => setDraggingOverId(null)}
+                  onDrop={(e) => !selectMode && handleDrop(folder.id, e)}
+                  className={cn(
+                    "group relative flex cursor-pointer flex-col items-center gap-1 rounded-lg border p-3 text-center transition-colors",
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : draggingOverId === folder.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:bg-muted/50"
+                  )}
                 >
-                  <Share2 />
-                  <span className="sr-only">Share {folder.name}</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => actions.setPendingDeleteId(folder.id)}
-                >
-                  <Trash2 />
-                  <span className="sr-only">Delete {folder.name}</span>
-                </Button>
-              </div>
-              <FolderIcon className="size-8 text-muted-foreground" />
-              <span className="w-full truncate text-xs" title={folder.name}>
-                {folder.name}
-              </span>
-            </div>
-          ))}
-        </div>
+                  {selectMode ? (
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSelected(folder.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute top-1 left-1 size-4"
+                    />
+                  ) : (
+                    <div
+                      className="absolute top-1 right-1 hidden gap-0.5 group-hover:flex"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => actions.openShare({ id: folder.id, name: folder.name })}
+                      >
+                        <Share2 />
+                        <span className="sr-only">Share {folder.name}</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => actions.setPendingDeleteId(folder.id)}
+                      >
+                        <Trash2 />
+                        <span className="sr-only">Delete {folder.name}</span>
+                      </Button>
+                    </div>
+                  )}
+                  <FolderIcon className="size-8 text-muted-foreground" />
+                  <span className="w-full truncate text-xs" title={folder.name}>
+                    {folder.name}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {children}
@@ -231,6 +331,27 @@ export function FolderBrowser({
       </Dialog>
 
       <FolderActionDialogs {...actions} />
+
+      <Dialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Delete {selectedIds.size} folder{selectedIds.size === 1 ? "" : "s"}?
+            </DialogTitle>
+            <DialogDescription>
+              This permanently deletes the selected folders and everything inside them. This
+              can&apos;t be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <Button variant="destructive" disabled={isBulkDeleting} onClick={confirmBulkDelete}>
+              {isBulkDeleting && <Loader2 className="animate-spin" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
