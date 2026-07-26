@@ -23,6 +23,7 @@ model User {
   folders            Folder[]
   calendarEvents     CalendarEvent[]
   calendarShareLinks ShareLink[]
+  todoItems          TodoItem[]
 
   @@unique([email])
   @@map("user")
@@ -210,4 +211,26 @@ model CalendarEvent {
 
   @@index([userId, startAt])
   @@map("calendar_event")
+}
+
+enum TodoCategory {
+  HOME
+  WORK
+
+  @@map("todo_category")
+}
+
+model TodoItem {
+  id        String       @id @default(cuid())
+  title     String
+  category  TodoCategory
+  completed Boolean      @default(false)
+  position  Int
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([userId, category, position])
+  @@map("todo_item")
 }
