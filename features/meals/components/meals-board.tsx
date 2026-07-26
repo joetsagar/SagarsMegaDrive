@@ -5,6 +5,7 @@ import { ChefHat, ChevronDown, ChevronRight, Pencil, Plus, ShoppingCart, Trash2 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { estimateCalories } from "@/features/meals/lib/calories";
 
 export type MealIngredientDto = {
   id: string;
@@ -102,15 +103,19 @@ function MealCard({
 }) {
   const [draft, setDraft] = useState("");
   const [collapsed, setCollapsed] = useState(false);
+  const totalCalories = meal.ingredients.reduce(
+    (sum, ingredient) => sum + estimateCalories(ingredient.title),
+    0
+  );
 
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border">
-      <div className="flex items-center justify-between gap-2 bg-foreground px-2 py-2.5 text-background">
+      <div className="flex items-center justify-between gap-2 bg-primary px-2 py-2.5 text-primary-foreground">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
             onClick={() => setCollapsed((c) => !c)}
-            className="flex size-7 shrink-0 items-center justify-center text-background/70 hover:text-background"
+            className="flex size-7 shrink-0 items-center justify-center text-primary-foreground/70 hover:text-primary-foreground"
           >
             {collapsed ? <ChevronRight className="size-4" /> : <ChevronDown className="size-4" />}
             <span className="sr-only">{collapsed ? "Expand" : "Collapse"} meal</span>
@@ -120,16 +125,21 @@ function MealCard({
             value={meal.title}
             onSave={onRenameMeal}
             textClassName="text-sm font-bold tracking-wide uppercase truncate"
-            inputClassName="h-7 min-w-0 flex-1 rounded border-0 bg-white/20 px-2 text-sm font-bold tracking-wide text-white uppercase focus:outline-none focus:ring-1 focus:ring-white/50"
-            iconClassName="shrink-0 text-background/60 hover:text-background"
+            inputClassName="h-7 min-w-0 flex-1 rounded border-0 bg-primary-foreground/20 px-2 text-sm font-bold tracking-wide text-primary-foreground uppercase placeholder:text-primary-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary-foreground/50"
+            iconClassName="shrink-0 text-primary-foreground/60 hover:text-primary-foreground"
           />
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          {meal.ingredients.length > 0 && (
+            <span className="shrink-0 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-xs tabular-nums text-primary-foreground/90">
+              ~{totalCalories} kcal
+            </span>
+          )}
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            className="text-background hover:bg-background/10 hover:text-background"
+            className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
             onClick={onAddToShoppingList}
           >
             <ShoppingCart />
@@ -138,7 +148,7 @@ function MealCard({
           <button
             type="button"
             onClick={onDeleteMeal}
-            className="flex size-8 shrink-0 items-center justify-center text-background/70 hover:text-background"
+            className="flex size-8 shrink-0 items-center justify-center text-primary-foreground/70 hover:text-primary-foreground"
           >
             <Trash2 className="size-4" />
             <span className="sr-only">Delete meal</span>
@@ -166,6 +176,9 @@ function MealCard({
                   inputClassName="h-8 min-w-0 flex-1 rounded border px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                   iconClassName="shrink-0 text-muted-foreground/60 hover:text-foreground"
                 />
+                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                  ~{estimateCalories(ingredient.title)} kcal
+                </span>
                 <button
                   type="button"
                   onClick={() => onDeleteIngredient(ingredient.id)}
