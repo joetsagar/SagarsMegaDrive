@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import {
   ArrowRightLeft,
   Briefcase,
@@ -8,12 +8,15 @@ import {
   ChevronDown,
   ChevronUp,
   Home as HomeIcon,
+  Maximize2,
+  Minimize2,
   Plus,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InlineEdit } from "@/components/ui/inline-edit";
 import { cn } from "@/lib/utils";
 import {
   TODO_CATEGORIES,
@@ -97,6 +100,7 @@ function TodoRow({
   onMoveUp,
   onMoveDown,
   onSwitchCategory,
+  onRename,
 }: {
   item: TodoItemDto;
   index: number;
@@ -108,6 +112,7 @@ function TodoRow({
   onMoveUp: () => void;
   onMoveDown: () => void;
   onSwitchCategory: () => void;
+  onRename: (title: string) => void;
 }) {
   const Icon = CATEGORY_ICON[item.category];
   const color = TODO_CATEGORY_META[item.category].color;
@@ -151,14 +156,16 @@ function TodoRow({
         <span className="sr-only">Toggle complete</span>
       </button>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span
-          className={cn(
+        <InlineEdit
+          value={item.title}
+          onSave={onRename}
+          textClassName={cn(
             "text-base break-words",
             item.completed && "text-muted-foreground line-through"
           )}
-        >
-          {item.title}
-        </span>
+          inputClassName="h-8 min-w-0 flex-1 rounded border px-2 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+          iconClassName="shrink-0 text-muted-foreground/60 hover:text-foreground"
+        />
         <span className="text-xs text-muted-foreground/70">{ageLabel(item)}</span>
       </div>
       {showCategoryBadge && (
@@ -196,10 +203,12 @@ function CompletedRow({
   item,
   onRestore,
   onDelete,
+  onRename,
 }: {
   item: TodoItemDto;
   onRestore: () => void;
   onDelete: () => void;
+  onRename: (title: string) => void;
 }) {
   const Icon = CATEGORY_ICON[item.category];
   const color = TODO_CATEGORY_META[item.category].color;
@@ -216,9 +225,13 @@ function CompletedRow({
         <span className="sr-only">Restore to outstanding</span>
       </button>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="text-base text-muted-foreground break-words line-through">
-          {item.title}
-        </span>
+        <InlineEdit
+          value={item.title}
+          onSave={onRename}
+          textClassName="text-base text-muted-foreground break-words line-through"
+          inputClassName="h-8 min-w-0 flex-1 rounded border px-2 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+          iconClassName="shrink-0 text-muted-foreground/60 hover:text-foreground"
+        />
         <span className="text-xs text-muted-foreground/70">{ageLabel(item)}</span>
       </div>
       <span
@@ -257,6 +270,16 @@ export function TodoBoard({
     WORK: "",
   });
   const [combinedCategory, setCombinedCategory] = useState<TodoCategory>("HOME");
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  useEffect(() => {
+    if (!isFullScreen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setIsFullScreen(false);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullScreen]);
 
   async function persistOrder(next: TodoItemDto[]) {
     if (!persist) return;
@@ -386,6 +409,21 @@ export function TodoBoard({
     }
   }
 
+  async function renameTodo(id: string, title: string) {
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, title } : t)));
+    if (!persist) return;
+    try {
+      const res = await fetch(`/api/todos/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Failed to rename task");
+    }
+  }
+
   async function toggleComplete(id: string, completed: boolean) {
     setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, completed } : t)));
     if (!persist) return;
@@ -479,13 +517,30 @@ export function TodoBoard({
           mode === "combined" ? reorderCombined(item.id, 1) : reorderWithinCategory(item.id, 1)
         }
         onSwitchCategory={() => switchCategory(item.id)}
+        onRename={(title) => renameTodo(item.id, title)}
       />
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-black tracking-tight uppercase sm:text-3xl">To-Do List</h1>
+    <div
+      className={cn(
+        "flex flex-col gap-4",
+        isFullScreen && "fixed inset-0 z-50 overflow-y-auto bg-background p-4"
+      )}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <h1 className="text-2xl font-black tracking-tight uppercase sm:text-3xl">To-Do List</h1>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => setIsFullScreen((v) => !v)}
+        >
+          {isFullScreen ? <Minimize2 /> : <Maximize2 />}
+          {isFullScreen ? "Exit full screen" : "Full screen"}
+        </Button>
+      </div>
 
       <div className="flex flex-wrap gap-1">
         <Button
@@ -688,6 +743,7 @@ export function TodoBoard({
               item={item}
               onRestore={() => restoreTodo(item.id)}
               onDelete={() => deleteTodo(item.id)}
+              onRename={(title) => renameTodo(item.id, title)}
             />
           ))}
         </div>
