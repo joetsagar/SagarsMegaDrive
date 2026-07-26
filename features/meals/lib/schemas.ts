@@ -11,3 +11,7 @@ export const updateMealSchema = z.object({
 export const createIngredientSchema = z.object({
   title: z.string().min(1).max(255),
 });
+
+export const updateIngredientSchema = z.object({
+  title: z.string().min(1).max(255),
+});
