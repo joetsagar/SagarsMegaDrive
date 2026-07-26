@@ -227,6 +227,7 @@ model TodoItem {
   title            String
   category         TodoCategory
   completed        Boolean      @default(false)
+  archived         Boolean      @default(false)
   position         Int
   combinedPosition Int          @default(0)
   userId           String
@@ -235,6 +236,7 @@ model TodoItem {
   updatedAt        DateTime     @updatedAt
 
   @@index([userId, category, position])
+  @@index([userId, archived])
   @@index([userId, combinedPosition])
   @@map("todo_item")
 }

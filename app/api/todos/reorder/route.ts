@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   const submittedIds = TODO_CATEGORIES.flatMap((category) => groups[category]);
 
   const owned = await db.todoItem.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, archived: false },
     select: { id: true },
   });
   const ownedIds = new Set(owned.map((t) => t.id));

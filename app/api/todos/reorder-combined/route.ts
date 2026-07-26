@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   const { orderedIds } = parsed.data;
 
   const owned = await db.todoItem.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, archived: false },
     select: { id: true },
   });
   const ownedIds = new Set(owned.map((t) => t.id));

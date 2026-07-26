@@ -24,6 +24,7 @@ export default async function TodosPage() {
         title: t.title,
         category: t.category,
         completed: t.completed,
+        archived: t.archived,
         position: t.position,
         combinedPosition: t.combinedPosition,
         createdAt: t.createdAt.toISOString(),

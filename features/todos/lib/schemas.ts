@@ -9,6 +9,7 @@ export const createTodoSchema = z.object({
 export const updateTodoSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   completed: z.boolean().optional(),
+  archived: z.boolean().optional(),
 });
 
 export const reorderTodosSchema = z.object({

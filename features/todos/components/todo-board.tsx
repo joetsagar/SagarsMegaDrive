@@ -27,6 +27,7 @@ export type TodoItemDto = {
   title: string;
   category: TodoCategory;
   completed: boolean;
+  archived: boolean;
   position: number;
   combinedPosition: number;
   createdAt: string;
@@ -56,18 +57,20 @@ function ageLabel(item: TodoItemDto): string {
 }
 
 function byCategory(todos: TodoItemDto[], category: TodoCategory) {
-  return todos.filter((t) => t.category === category).sort((a, b) => a.position - b.position);
+  return todos
+    .filter((t) => t.category === category && !t.archived)
+    .sort((a, b) => a.position - b.position);
 }
 
 function getGroup(todos: TodoItemDto[], category: TodoCategory, completed: boolean) {
   return todos
-    .filter((t) => t.category === category && t.completed === completed)
+    .filter((t) => t.category === category && t.completed === completed && !t.archived)
     .sort((a, b) => a.position - b.position);
 }
 
 function getCombinedGroup(todos: TodoItemDto[], completed: boolean) {
   return todos
-    .filter((t) => t.completed === completed)
+    .filter((t) => t.completed === completed && !t.archived)
     .sort((a, b) => a.combinedPosition - b.combinedPosition);
 }
 
@@ -189,6 +192,54 @@ function TodoRow({
   );
 }
 
+function CompletedRow({
+  item,
+  onRestore,
+  onDelete,
+}: {
+  item: TodoItemDto;
+  onRestore: () => void;
+  onDelete: () => void;
+}) {
+  const Icon = CATEGORY_ICON[item.category];
+  const color = TODO_CATEGORY_META[item.category].color;
+
+  return (
+    <div className="flex items-center gap-2 border-b px-2 py-3 last:border-b-0">
+      <button
+        type="button"
+        onClick={onRestore}
+        style={{ borderColor: color, backgroundColor: color }}
+        className="flex size-8 shrink-0 items-center justify-center rounded border-2 text-white"
+      >
+        <Check className="size-5" />
+        <span className="sr-only">Restore to outstanding</span>
+      </button>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="text-base text-muted-foreground break-words line-through">
+          {item.title}
+        </span>
+        <span className="text-xs text-muted-foreground/70">{ageLabel(item)}</span>
+      </div>
+      <span
+        style={{ backgroundColor: `${color}26`, borderColor: color, color }}
+        className="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-sm"
+      >
+        <Icon className="size-3.5" />
+        {TODO_CATEGORY_META[item.category].label}
+      </span>
+      <button
+        type="button"
+        onClick={onDelete}
+        className="flex size-8 shrink-0 items-center justify-center text-muted-foreground/60 hover:text-destructive"
+      >
+        <Trash2 className="size-4" />
+        <span className="sr-only">Delete task</span>
+      </button>
+    </div>
+  );
+}
+
 export function TodoBoard({
   initialTodos,
   initialShoppingItems,
@@ -200,7 +251,7 @@ export function TodoBoard({
   persist?: boolean;
 }) {
   const [todos, setTodos] = useState(initialTodos);
-  const [view, setView] = useState<"split" | "combined" | "shopping">("split");
+  const [view, setView] = useState<"split" | "combined" | "shopping" | "completed">("split");
   const [draftTitle, setDraftTitle] = useState<Record<TodoCategory, string>>({
     HOME: "",
     WORK: "",
@@ -312,6 +363,7 @@ export function TodoBoard({
           title,
           category,
           completed: false,
+          archived: false,
           position: list.length,
           combinedPosition: prev.length,
           createdAt: new Date().toISOString(),
@@ -360,8 +412,49 @@ export function TodoBoard({
     }
   }
 
+  async function clearCompleted(ids: string[]) {
+    if (ids.length === 0) return;
+    const idSet = new Set(ids);
+    setTodos((prev) => prev.map((t) => (idSet.has(t.id) ? { ...t, archived: true } : t)));
+    if (!persist) return;
+    try {
+      const results = await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/todos/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ archived: true }),
+          })
+        )
+      );
+      if (results.some((res) => !res.ok)) throw new Error();
+    } catch {
+      toast.error("Failed to clear completed tasks");
+    }
+  }
+
+  async function restoreTodo(id: string) {
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: false, archived: false } : t))
+    );
+    if (!persist) return;
+    try {
+      const res = await fetch(`/api/todos/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: false, archived: false }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Failed to restore task");
+    }
+  }
+
   const combinedCompleted = getCombinedGroup(todos, true);
   const combinedActive = getCombinedGroup(todos, false);
+  const archivedTodos = [...todos]
+    .filter((t) => t.archived)
+    .sort((a, b) => a.combinedPosition - b.combinedPosition);
 
   function renderRow(item: TodoItemDto, showCategoryBadge: boolean, mode: "category" | "combined") {
     const group =
@@ -419,6 +512,14 @@ export function TodoBoard({
         >
           Shopping List
         </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={view === "completed" ? "secondary" : "ghost"}
+          onClick={() => setView("completed")}
+        >
+          Completed
+        </Button>
       </div>
 
       <div className={cn("grid grid-cols-1 gap-4 landscape:grid-cols-2 lg:grid-cols-2", view !== "split" && "hidden")}>
@@ -439,7 +540,18 @@ export function TodoBoard({
                       {TODO_CATEGORY_META[category].label}
                     </span>
                   </div>
-                  <span className="text-sm text-white/70">{active.length} left</span>
+                  <div className="flex items-center gap-2">
+                    {completed.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => clearCompleted(completed.map((t) => t.id))}
+                        className="text-sm text-white/70 underline-offset-2 hover:text-white hover:underline"
+                      >
+                        Clear completed
+                      </button>
+                    )}
+                    <span className="text-sm text-white/70">{active.length} left</span>
+                  </div>
                 </div>
 
                 <div className="flex min-h-16 flex-1 flex-col">
@@ -448,9 +560,9 @@ export function TodoBoard({
                       No tasks yet
                     </p>
                   )}
+                  {active.map((item) => renderRow(item, false, "category"))}
                   {completed.length > 0 && <SectionLabel>Completed</SectionLabel>}
                   {completed.map((item) => renderRow(item, false, "category"))}
-                  {active.map((item) => renderRow(item, false, "category"))}
                 </div>
 
                 <form
@@ -486,16 +598,27 @@ export function TodoBoard({
       >
           <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
             <span className="text-base font-bold tracking-wide uppercase">All tasks</span>
-            <span className="text-sm text-background/70">{combinedActive.length} left</span>
+            <div className="flex items-center gap-2">
+              {combinedCompleted.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => clearCompleted(combinedCompleted.map((t) => t.id))}
+                  className="text-sm text-background/70 underline-offset-2 hover:text-background hover:underline"
+                >
+                  Clear completed
+                </button>
+              )}
+              <span className="text-sm text-background/70">{combinedActive.length} left</span>
+            </div>
           </div>
 
           <div className="flex min-h-16 flex-1 flex-col">
-            {todos.length === 0 && (
+            {combinedActive.length === 0 && combinedCompleted.length === 0 && (
               <p className="px-4 py-6 text-center text-sm text-muted-foreground">No tasks yet</p>
             )}
+            {combinedActive.map((item) => renderRow(item, true, "combined"))}
             {combinedCompleted.length > 0 && <SectionLabel>Completed</SectionLabel>}
             {combinedCompleted.map((item) => renderRow(item, true, "combined"))}
-            {combinedActive.map((item) => renderRow(item, true, "combined"))}
           </div>
 
           <form
@@ -540,6 +663,34 @@ export function TodoBoard({
 
       <div className={cn(view !== "shopping" && "hidden")}>
         <ShoppingList initialItems={initialShoppingItems} persist={persist} />
+      </div>
+
+      <div
+        className={cn(
+          "flex flex-col overflow-hidden rounded-lg border",
+          view !== "completed" && "hidden"
+        )}
+      >
+        <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2.5 text-background">
+          <span className="text-base font-bold tracking-wide uppercase">Completed</span>
+          <span className="text-sm text-background/70">{archivedTodos.length} cleared</span>
+        </div>
+        <div className="flex min-h-16 flex-1 flex-col">
+          {archivedTodos.length === 0 && (
+            <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+              Nothing cleared yet — use &quot;Clear completed&quot; on a list to send finished
+              tasks here.
+            </p>
+          )}
+          {archivedTodos.map((item) => (
+            <CompletedRow
+              key={item.id}
+              item={item}
+              onRestore={() => restoreTodo(item.id)}
+              onDelete={() => deleteTodo(item.id)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
