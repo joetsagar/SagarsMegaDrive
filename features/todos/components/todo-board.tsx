@@ -330,11 +330,16 @@ export function TodoBoard({
 
       const other = group[swapIdx];
       const next = prev.map((t) => {
-        if (t.id === item.id) return { ...t, position: other.position };
-        if (t.id === other.id) return { ...t, position: item.position };
+        if (t.id === item.id) {
+          return { ...t, position: other.position, combinedPosition: other.combinedPosition };
+        }
+        if (t.id === other.id) {
+          return { ...t, position: item.position, combinedPosition: item.combinedPosition };
+        }
         return t;
       });
       persistOrder(next);
+      persistCombinedOrder(next);
       return next;
     });
   }
