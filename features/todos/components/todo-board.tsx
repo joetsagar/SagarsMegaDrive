@@ -25,6 +25,10 @@ import {
   type TodoCategory,
 } from "@/features/todos/lib/categories";
 import { ShoppingList, type ShoppingItemDto } from "@/features/shopping/components/shopping-list";
+import {
+  WorkTasksTemplate,
+  type TemplateItemDto,
+} from "@/features/todos/components/work-tasks-template";
 
 export type TodoItemDto = {
   id: string;
@@ -257,15 +261,19 @@ function CompletedRow({
 export function TodoBoard({
   initialTodos,
   initialShoppingItems,
+  initialTemplateItems,
   persist = true,
 }: {
   initialTodos: TodoItemDto[];
   initialShoppingItems: ShoppingItemDto[];
+  initialTemplateItems: TemplateItemDto[];
   /** When false, all edits stay in local state only — no network calls. Used for the unauthenticated preview. */
   persist?: boolean;
 }) {
   const [todos, setTodos] = useState(initialTodos);
-  const [view, setView] = useState<"split" | "combined" | "shopping" | "completed">("split");
+  const [view, setView] = useState<
+    "split" | "combined" | "shopping" | "workTasks" | "completed"
+  >("split");
   const [draftTitle, setDraftTitle] = useState<Record<TodoCategory, string>>({
     HOME: "",
     WORK: "",
@@ -498,6 +506,35 @@ export function TodoBoard({
     }
   }
 
+  async function importWorkTasks(titles: string[]): Promise<TodoItemDto[] | null> {
+    if (!persist) {
+      const workCount = byCategory(todos, "WORK").length;
+      const maxCombined = todos.reduce((max, t) => Math.max(max, t.combinedPosition), -1);
+      const newItems: TodoItemDto[] = titles.map((title, i) => ({
+        id: crypto.randomUUID(),
+        title,
+        category: "WORK",
+        completed: false,
+        archived: false,
+        position: workCount + i,
+        combinedPosition: maxCombined + 1 + i,
+        createdAt: new Date().toISOString(),
+      }));
+      setTodos((prev) => [...prev, ...newItems]);
+      return newItems;
+    }
+
+    try {
+      const res = await fetch("/api/todos/templates/import", { method: "POST" });
+      if (!res.ok) throw new Error();
+      const { added }: { added: TodoItemDto[] } = await res.json();
+      setTodos((prev) => [...prev, ...added]);
+      return added;
+    } catch {
+      return null;
+    }
+  }
+
   const combinedCompleted = getCombinedGroup(todos, true);
   const combinedActive = getCombinedGroup(todos, false);
   const archivedTodos = [...todos]
@@ -571,6 +608,14 @@ export function TodoBoard({
           onClick={() => setView("shopping")}
         >
           Shopping List
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={view === "workTasks" ? "secondary" : "ghost"}
+          onClick={() => setView("workTasks")}
+        >
+          Work Tasks
         </Button>
         <Button
           type="button"
@@ -723,6 +768,14 @@ export function TodoBoard({
 
       <div className={cn(view !== "shopping" && "hidden")}>
         <ShoppingList initialItems={initialShoppingItems} persist={persist} />
+      </div>
+
+      <div className={cn(view !== "workTasks" && "hidden")}>
+        <WorkTasksTemplate
+          initialItems={initialTemplateItems}
+          persist={persist}
+          onImport={importWorkTasks}
+        />
       </div>
 
       <div

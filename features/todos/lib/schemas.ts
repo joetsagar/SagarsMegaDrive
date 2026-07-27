@@ -20,3 +20,15 @@ export const reorderTodosSchema = z.object({
 export const reorderCombinedSchema = z.object({
   orderedIds: z.array(z.string()),
 });
+
+export const createTemplateItemSchema = z.object({
+  title: z.string().min(1).max(255),
+});
+
+export const updateTemplateItemSchema = z.object({
+  title: z.string().min(1).max(255),
+});
+
+export const reorderTemplateItemsSchema = z.object({
+  orderedIds: z.array(z.string()),
+});

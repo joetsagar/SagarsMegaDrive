@@ -25,6 +25,7 @@ model User {
   calendarShareLinks ShareLink[]      @relation("CalendarShareLinks")
   shoppingShareLinks ShareLink[]      @relation("ShoppingShareLinks")
   todoItems          TodoItem[]
+  todoTemplateItems  TodoTemplateItem[]
   shoppingItems      ShoppingItem[]
   meals              Meal[]
 
@@ -243,6 +244,19 @@ model TodoItem {
   @@index([userId, archived])
   @@index([userId, combinedPosition])
   @@map("todo_item")
+}
+
+model TodoTemplateItem {
+  id        String   @id @default(cuid())
+  title     String
+  position  Int
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, position])
+  @@map("todo_template_item")
 }
 
 model ShoppingItem {

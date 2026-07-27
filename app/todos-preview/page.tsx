@@ -1,5 +1,6 @@
 import { TodoBoard, type TodoItemDto } from "@/features/todos/components/todo-board";
 import type { ShoppingItemDto } from "@/features/shopping/components/shopping-list";
+import type { TemplateItemDto } from "@/features/todos/components/work-tasks-template";
 import { FullScreenProvider } from "@/components/layout/fullscreen-provider";
 
 function daysAgo(days: number): string {
@@ -25,6 +26,12 @@ const SAMPLE_SHOPPING: ShoppingItemDto[] = [
   { id: "s3", title: "Pasta", quantity: 1, completed: true, position: 2 },
 ];
 
+const SAMPLE_TEMPLATE: TemplateItemDto[] = [
+  { id: "t1", title: "Check overnight emails", position: 0 },
+  { id: "t2", title: "Stand-up meeting", position: 1 },
+  { id: "t3", title: "Review calendar for the day", position: 2 },
+];
+
 export default function TodosPreviewPage() {
   return (
     <FullScreenProvider>
@@ -33,7 +40,12 @@ export default function TodosPreviewPage() {
           Preview only — no login required, nothing here is saved. This is the same To-Do List
           component that lives in the dashboard.
         </p>
-        <TodoBoard initialTodos={SAMPLE_TODOS} initialShoppingItems={SAMPLE_SHOPPING} persist={false} />
+        <TodoBoard
+          initialTodos={SAMPLE_TODOS}
+          initialShoppingItems={SAMPLE_SHOPPING}
+          initialTemplateItems={SAMPLE_TEMPLATE}
+          persist={false}
+        />
       </div>
     </FullScreenProvider>
   );
