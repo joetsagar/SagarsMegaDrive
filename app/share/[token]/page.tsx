@@ -8,7 +8,7 @@ import { getShareLinkByToken } from "@/features/files/lib/share";
 import { formatBytes, formatDate } from "@/features/files/lib/format";
 import { ShareAudioPlayer } from "@/features/files/components/share-audio-player";
 import { CalendarView } from "@/features/calendar/components/calendar-view";
-import { CopyShoppingListButton } from "@/features/shopping/components/copy-shopping-list-button";
+import { SharedShoppingListView } from "@/features/shopping/components/shared-shopping-list-view";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -47,7 +47,11 @@ export default async function SharePage({
             isPrivate={shareLink!.isPrivate}
           />
         ) : isValidShopping ? (
-          <SharedShoppingList shoppingUserId={shareLink!.shoppingUser!.id} shareLinkId={shareLink!.id} />
+          <SharedShoppingList
+            token={token}
+            shoppingUserId={shareLink!.shoppingUser!.id}
+            shareLinkId={shareLink!.id}
+          />
         ) : (
           <CardHeader className="text-center">
             <CardTitle>Link not found</CardTitle>
@@ -168,9 +172,11 @@ async function SharedCalendar({
 }
 
 async function SharedShoppingList({
+  token,
   shoppingUserId,
   shareLinkId,
 }: {
+  token: string;
   shoppingUserId: string;
   shareLinkId: string;
 }) {
@@ -180,41 +186,22 @@ async function SharedShoppingList({
     where: { userId: shoppingUserId },
     orderBy: { position: "asc" },
   });
-  const active = items.filter((i) => !i.completed);
-  const inCart = items.filter((i) => i.completed);
 
   return (
     <>
       <CardHeader className="text-center">
         <CardTitle>Shared Shopping List</CardTitle>
-        <CardDescription>View only — copy it to send as a text.</CardDescription>
+        <CardDescription>Tick items off as you get them — it updates the real list.</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        {items.length === 0 ? (
-          <p className="text-center text-sm text-muted-foreground">List is empty</p>
-        ) : (
-          <div className="flex flex-col gap-1">
-            {active.map((item) => (
-              <div key={item.id} className="flex items-center justify-between gap-2 border-b py-2">
-                <span className="text-sm">{item.title}</span>
-                {item.quantity > 1 && (
-                  <span className="text-sm font-semibold text-primary">×{item.quantity}</span>
-                )}
-              </div>
-            ))}
-            {inCart.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-2 border-b py-2 text-muted-foreground last:border-b-0"
-              >
-                <span className="text-sm line-through">{item.title}</span>
-                {item.quantity > 1 && <span className="text-sm">×{item.quantity}</span>}
-              </div>
-            ))}
-          </div>
-        )}
-        <CopyShoppingListButton
-          items={active.map((i) => ({ title: i.title, quantity: i.quantity }))}
+      <CardContent>
+        <SharedShoppingListView
+          token={token}
+          initialItems={items.map((i) => ({
+            id: i.id,
+            title: i.title,
+            quantity: i.quantity,
+            completed: i.completed,
+          }))}
         />
       </CardContent>
     </>

@@ -29,14 +29,6 @@ function byPosition(items: ShoppingItemDto[]) {
   return [...items].sort((a, b) => a.position - b.position);
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="border-b bg-muted/50 px-4 py-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-      {children}
-    </div>
-  );
-}
-
 function QuantityControl({
   quantity,
   onChange,
@@ -264,6 +256,22 @@ export function ShoppingList({
     }
   }
 
+  async function clearAcquired() {
+    const ids = items.filter((i) => i.completed).map((i) => i.id);
+    if (ids.length === 0) return;
+    const idSet = new Set(ids);
+    setItems((prev) => prev.filter((i) => !idSet.has(i.id)));
+    if (!persist) return;
+    try {
+      const results = await Promise.all(
+        ids.map((id) => fetch(`/api/shopping/${id}`, { method: "DELETE" }))
+      );
+      if (results.some((res) => !res.ok)) throw new Error();
+    } catch {
+      toast.error("Failed to clear acquired items");
+    }
+  }
+
   const completed = byPosition(items.filter((i) => i.completed));
   const active = byPosition(items.filter((i) => !i.completed));
 
@@ -290,7 +298,20 @@ export function ShoppingList({
         {items.length === 0 && (
           <p className="px-4 py-6 text-center text-sm text-muted-foreground">List is empty</p>
         )}
-        {completed.length > 0 && <SectionLabel>In cart</SectionLabel>}
+        {completed.length > 0 && (
+          <div className="flex items-center justify-between border-b bg-muted/50 py-1 pr-2 pl-4">
+            <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+              In cart
+            </span>
+            <button
+              type="button"
+              onClick={clearAcquired}
+              className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Clear acquired
+            </button>
+          </div>
+        )}
         {completed.map((item, index) => (
           <ShoppingRow
             key={item.id}
