@@ -630,11 +630,15 @@ wallUnit(PASS.z1 + 1.2, 0.3, 1);
 // ---- LED strip lights under the wall units ----
 const ledGroup = new THREE.Group(); scene.add(ledGroup);
 {
-  const ledMat = new THREE.MeshStandardMaterial({ color: 0xfff6e0, emissive: 0xfff1d0, emissiveIntensity: 2.2 });
+  const ledMat = new THREE.MeshStandardMaterial({ color: 0xfff6e0, emissive: 0xfff1d0, emissiveIntensity: 4 });
   const z0 = PASS.z1 + 0.02, z1 = PASS.z1 + 1.5 - 0.02, x = W - WU.d + 0.04;   // near the front edge of the units
-  bb(x - 0.006, WU.y0 - 0.006, z0, x + 0.006, WU.y0, z1, ledMat, ledGroup, false);
+  bb(x - 0.009, WU.y0 - 0.008, z0, x + 0.009, WU.y0, z1, ledMat, ledGroup, false);
+  // soft warm glow on the splashback tiles behind the worktop
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0xffd98a, transparent: true, opacity: 0.12, depthWrite: false });
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(z1 - z0, WU.y0 - WT), glowMat);
+  glow.rotation.y = -Math.PI / 2; glow.position.set(W - 0.014, (WU.y0 + WT) / 2, (z0 + z1) / 2); ledGroup.add(glow);
   for (let i = 0; i < 4; i++) {                       // light washing down onto the worktop
-    const sp = new THREE.SpotLight(0xffe9c4, 1.6, 1.6, Math.PI / 2.6, 0.8, 1.5);
+    const sp = new THREE.SpotLight(0xffd9a0, 4, 1.2, Math.PI / 2.6, 0.9, 1);
     const z = z0 + (z1 - z0) * (i + 0.5) / 4;
     sp.position.set(x, WU.y0 - 0.01, z); sp.target.position.set(x - 0.05, WT, z);
     ledGroup.add(sp, sp.target);
