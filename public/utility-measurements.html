@@ -68,13 +68,13 @@
 const W = 1380, L = 2780, T = 180, TL = 320;
 const DOOR = { x0: 515, x1: 1275, arch: 35 };
 const PASS = { z0: 0, z1: 930 };
-const WIN_L = { z0: 190, z1: 2190, reveal: 190 };
+const WIN_L = { z0: 190, z1: 2180, reveal: 190 };
 const WIN_B = { x0: 270, x1: 1370, recess: 40 };
-const RUN_R = { x0: 780, z0: 930, z1: 2190 };        // worktop front edge x=780 (600 deep)
-const RUN_B = { z0: 2190 };                          // sink worktop front edge (590 deep)
-const UNIT = { x0: 0, x1: 1200, z0: 2210, door: 600 };
+const RUN_R = { x0: 780, z0: 930, z1: 2180 };        // worktop front edge x=780 (600 deep)
+const RUN_B = { z0: 2180 };                          // sink worktop front edge (600 deep)
+const UNIT = { x0: 0, x1: 1200, z0: 2200, door: 600 };
 const SINK = { x0: 40, x1: 1040, z0: 2240, z1: 2730 }, BOWL = { x0: 90, x1: 510, z0: 2310, z1: 2660 };
-const EP = 18, APP = { x0: 800, x1: 1350 }, APP_W = (2210 - EP - 930 - 18) / 2;
+const EP = 18, APP = { x0: 800, x1: 1350 }, APP_W = (2200 - EP - 930 - 18) / 2;
 const WU = { x0: W - 320, a: [930, 2130], b: [2130, 2430] };
 const HEAT = { x0: 40, x1: 440, z0: 75, z1: 105 };   // electric towel rail, 90 mm off the wall
 
@@ -181,7 +181,7 @@ for (const [z0, name] of [[dz0, 'Dryer'], [dz0 + APP_W, 'Washer']]) {
 }
 
 // end panel between the washer and the 1200 sink unit
-rect(APP.x0, 2210 - EP, W, 2210, 'unitLine', null);
+rect(APP.x0, UNIT.z0 - EP, W, UNIT.z0, 'unitLine', null);
 
 // LED strip under the wall units + triple socket on the wall above the machines
 el('line', { x1: W - 280, y1: 950, x2: W - 280, y2: 2410, stroke: '#e0a800', 'stroke-width': 10, 'stroke-dasharray': '30 14' });
@@ -211,8 +211,8 @@ dim(0, L + T, WIN_B.x0, L + T, 170, '270', true);
 dim(WIN_B.x0, L + T, WIN_B.x1, L + T, 170, 'Window 1100');
 // left wall: pillar, long window, wall beside sink unit
 dim(-TL, 0, -TL, WIN_L.z0, -160, '190', true);
-dim(-TL, WIN_L.z0, -TL, WIN_L.z1, -160, 'Window 2000');
-dim(-TL, WIN_L.z1, -TL, L, -160, '590', true);
+dim(-TL, WIN_L.z0, -TL, WIN_L.z1, -160, 'Window 1990');
+dim(-TL, WIN_L.z1, -TL, L, -160, '600', true);
 dim(-WIN_L.reveal, 1150, 0, 1150, 0, 'Sill 190', true);
 // door wall
 dim(0, -T, DOOR.x0 - DOOR.arch, -T, -170, '480', true);
@@ -225,7 +225,7 @@ dim(W + T, WU.a[0], W + T, WU.a[1], 400, 'Wall unit 1200', true);
 dim(W + T, WU.b[0], W + T, WU.b[1], 400, '300', true);
 // worktop depths
 dim(RUN_R.x0, RUN_R.z0, W, RUN_R.z0, -70, '600', true);
-dim(1110, RUN_B.z0, 1110, L, 0, '590', true);
+dim(1110, RUN_B.z0, 1110, L, 0, '600', true);
 // base unit + gap
 dim(0, RUN_B.z0, UNIT.door, RUN_B.z0, -100, 'Door 600', true);
 dim(UNIT.door, RUN_B.z0, APP.x0, RUN_B.z0, -100, 'Face plate 200', true);
@@ -272,7 +272,7 @@ const TL = 0.32;                                  // left wall is thicker: long 
 const DOOR_ARCH = 0.035;                          // architrave half-width each side of the door opening
 const DOOR = { x0: 0.48 + 0.035, x1: 0.48 + 0.035 + 0.76, h: 2.04 };  // door in top wall, opens outward; frame starts 480 mm from the window wall
 const PASS = { z0: 0, z1: 0.93, h: 2.04 };        // open passage in right wall, top end
-const PIER = { len: 0.59 };                             // long window starts at the end of the sink-wall unit
+const PIER = { len: 0.60 };                             // long window starts at the end of the sink-wall unit
 const XL = 0;                                     // left wall face is flush with the window sill (no step)
 const WIN_L = { z1: 2.78 - PIER.len, len: 2.24, sill: 0.95, head: 2.10, reveal: 0.19 }; // long window starts at the end of the kitchen unit
 const PILLAR = { x: 0, z: 0.19 };                 // 190 mm pillar at the door end of the window, face flush with the sill
@@ -280,7 +280,7 @@ WIN_L.z0 = PILLAR.z;                              // window runs from the pillar
 const WIN_B = { x0: 0.27, x1: 1.37, sill: 1.03, head: 2.12, recess: 0.04 }; // 110 cm single pane, recessed 4 cm
 const WT = 0.91;                                  // worktop height
 const RUN_R = { x0: 1.38 - 0.60 + 0.02, z0: 2.78 - 1.85 }; // right-hand worktop: 1850 long from the sink wall, 600 deep (incl. 20 overhang)
-const RUN_B = { z0: 2.78 - 0.59 + 0.02 };          // worktop along sink wall: 590 deep (incl. 20 overhang)
+const RUN_B = { z0: 2.78 - 0.60 + 0.02 };          // worktop along sink wall: 600 deep (incl. 20 overhang)
 const SINK = { x0: 0.04, x1: 1.04, z0: 2.24, z1: 2.73 };   // sink at the right-hand end, drainer to the left
 const BOWL = { x0: 0.09, x1: 0.51, z0: 2.31, z1: 2.66, d: 0.18 };
 
@@ -775,7 +775,7 @@ dimLine([XL - WIN_L.reveal, WIN_L.sill + 0.01, 1.2], [XL, WIN_L.sill + 0.01, 1.2
 dimLine([0.9, WIN_B.sill + 0.01, L], [0.9, WIN_B.sill + 0.01, L + WIN_B.recess], 'Recessed 40 mm', [0, 0.02, 0]);
 dimLine([W - 0.005, WT + 0.01, RUN_R.z0], [W - 0.005, WT + 0.01, L], 'Worktop 1850 mm', [-0.03, 0, 0]);
 dimLine([RUN_R.x0 - OH, WT + 0.01, 1.3], [W, WT + 0.01, 1.3], 'Depth 600 mm', [0, 0.01, 0]);
-dimLine([1.15, WT + 0.01, RUN_B.z0 - OH], [1.15, WT + 0.01, L], 'Depth 590 mm', [0, 0.01, 0]);
+dimLine([1.15, WT + 0.01, RUN_B.z0 - OH], [1.15, WT + 0.01, L], 'Depth 600 mm', [0, 0.01, 0]);
 dimLine([0.04, 1.09, 0.09], [0.44, 1.09, 0.09], 'Electric towel rail 400 × 800 mm', [0, 0, 0]);
 dimLine([XL + 0.005, 1.6, 0], [XL + 0.005, 1.6, PILLAR.z], 'Pillar 190 mm', [0.04, 0, 0]);
 dimLine([XL, 1.0, 0.02], [DOOR.x0 - 0.035, 1.0, 0.02], 'Sill to door frame 480 mm', [0, 0, 0]);
