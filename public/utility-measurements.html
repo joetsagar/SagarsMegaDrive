@@ -712,13 +712,16 @@ ROOT = scene;
 // upstand / tiled splashback along both runs
 // tiled splashback panel with consistent ~75 mm tiles (each texture repeat = 8 tiles = 600 mm)
 const splashMats = [];
-function tiles(x0, y0, z0, x1, y1, z1) {
+function tiles(x0, y0, z0, x1, y1, z1, parent = scene) {
   const t = splashTex.clone(); t.needsUpdate = true;
-  const len = Math.max(x1 - x0, z1 - z0);
-  t.repeat.set(len / 0.6, (y1 - y0) / 0.6);
+  const dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
+  // scale the texture for the panel's main face (the thinnest dimension is its normal)
+  if (dy <= dx && dy <= dz) t.repeat.set(dx / 0.6, dz / 0.6);        // horizontal: sill / soffit
+  else if (dx <= dz) t.repeat.set(dz / 0.6, dy / 0.6);               // wall along z
+  else t.repeat.set(dx / 0.6, dy / 0.6);                             // wall along x
   const m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.25 });
   m.userData.rep = t.repeat.clone(); splashMats.push(m);
-  bb(x0, y0, z0, x1, y1, z1, m, scene, false);
+  bb(x0, y0, z0, x1, y1, z1, m, parent, false);
 }
 const TILE_TOP = WU.y0;                                   // tiles run up to the underside of the wall units (1450)
 tiles(0, WT, L - 0.012, W, WIN_B.sill, L);                // sink wall, worktop to window sill
@@ -726,6 +729,14 @@ tiles(0, WIN_B.sill, L - 0.012, WIN_B.x0, TILE_TOP, L);   // sink wall beside th
 tiles(WIN_B.x1, WIN_B.sill, L - 0.012, W, TILE_TOP, L);   // sliver beside the window on the other side
 tiles(0, WT, WIN_L.z1, 0.012, TILE_TOP, L - 0.012);       // left wall above the sink worktop, up to 1450
 tiles(W - 0.012, WT, PASS.z1, W, TILE_TOP, L);            // washer wall, worktop to wall units
+// long window: tiled sill and tiled reveals all round the frame (190 deep)
+{
+  const rv = WIN_L.reveal, t = 0.01;
+  tiles(XL - rv, WIN_L.sill, WIN_L.z0, XL, WIN_L.sill + t, WIN_L.z1, wl.g);            // sill
+  tiles(XL - rv, WIN_L.head - t, WIN_L.z0, XL, WIN_L.head, WIN_L.z1, wl.g);            // head / soffit
+  tiles(XL - rv, WIN_L.sill, WIN_L.z0, XL, WIN_L.head, WIN_L.z0 + t, wl.g);            // reveal at the door end
+  tiles(XL - rv, WIN_L.sill, WIN_L.z1 - t, XL, WIN_L.head, WIN_L.z1, wl.g);            // reveal at the sink end
+}
 
 // ---- Inset stainless sink: bowl on the right-hand end, drainer to the left ----
 ROOT = topGroup;
