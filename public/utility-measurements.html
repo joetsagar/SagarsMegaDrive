@@ -52,7 +52,7 @@
     <span><i class="sw" style="background:var(--glass);border-color:var(--muted)"></i>Window</span>
     <span><i class="sw" style="background:var(--heater);border-color:var(--muted)"></i>Electric towel rail</span>
   </div>
-    <p class="notes">Worktop height 910 mm. Window sills: long window 950 mm, sink window 1030 mm. Wall units 720 mm tall, bottom at 1450 mm. The long window wall is flush with its sill; the 190 mm pillar is the solid wall between the door wall and that window. Electric towel rail 400 × 800 mm, bottom at 250 mm, 90 mm off the wall. Door leaf removed, frame kept. Face plate beside the 600 door: 200 mm wide × 760 mm high (same height as the door), running from the door edge to the washer front line.</p>
+    <p class="notes">Worktop height 910 mm. Window sills: long window 950 mm, sink window 1030 mm. Wall units 720 mm tall, bottom at 1450 mm. The long window wall is flush with its sill; the 190 mm pillar is the solid wall between the door wall and that window. Electric towel rail 400 × 800 mm, bottom at 250 mm, 90 mm off the wall. Door leaf removed, frame kept. 18 mm end panel between the washer and the 1200 unit, floor to underside of the worktop (870 mm), 580 mm deep. Face plate beside the 600 door: 200 mm wide × 760 mm high (same height as the door), running from the door edge to the washer front line.</p>
   </div>
 </div>
 <script>
@@ -68,7 +68,7 @@ const RUN_R = { x0: 780, z0: 930, z1: 2190 };        // worktop front edge x=780
 const RUN_B = { z0: 2190 };                          // sink worktop front edge (590 deep)
 const UNIT = { x0: 0, x1: 1200, z0: 2210, door: 600 };
 const SINK = { x0: 40, x1: 1040, z0: 2240, z1: 2730 }, BOWL = { x0: 90, x1: 510, z0: 2310, z1: 2660 };
-const APP = { x0: 800, x1: 1350 }, APP_W = (2210 - 930 - 18) / 2;
+const EP = 18, APP = { x0: 800, x1: 1350 }, APP_W = (2210 - EP - 930 - 18) / 2;
 const WU = { x0: W - 320, a: [930, 2130], b: [2130, 2430] };
 const HEAT = { x0: 40, x1: 440, z0: 75, z1: 105 };   // electric towel rail, 90 mm off the wall
 
@@ -173,6 +173,9 @@ for (const [z0, name] of [[dz0, 'Dryer'], [dz0 + APP_W, 'Washer']]) {
   rect(APP.x0, z0 + 6, APP.x1, z0 + APP_W - 6, 'appl', 'muted', { 'stroke-dasharray': '14 8', 'stroke-width': 4 });
   text(APP.x0 + 120, z0 + APP_W / 2, name, { size: 44, color: 'muted', rot: -90 });
 }
+
+// end panel between the washer and the 1200 sink unit
+rect(APP.x0, 2210 - EP, W, 2210, 'unitLine', null);
 
 // ---- Wall units above (dashed) ----
 for (const [z0, z1, doors] of [[...WU.a, 2], [...WU.b, 1]]) {
@@ -539,7 +542,8 @@ function handle(pos, vertical, axis) {
 // Right-hand run: washing machine + tumble dryer side by side under the worktop
 // end panel at the door end, flush with the end of the wall
 bb(RUN_R.x0 - OH, 0, RUN_R.z0, W, WT - 0.04, RUN_R.z0 + 0.018, M.cab);
-const APP_W = (RUN_B.z0 - RUN_R.z0 - 0.018) / 2;   // ~0.6 m each
+const EP = 0.018;                                  // end panel between the washer and the 1200 sink unit
+const APP_W = (RUN_B.z0 - EP - RUN_R.z0 - 0.018) / 2;   // ~620 mm each
 function appliance(z0, z1, dryer) {
   const x0 = RUN_R.x0 - 0.0, h = 0.85, front = x0;
   bb(x0, 0.01, z0 + 0.004, W - 0.03, h, z1 - 0.004, M.appl);
@@ -558,7 +562,9 @@ function appliance(z0, z1, dryer) {
   glass.rotation.y = -Math.PI / 2; glass.position.set(front - 0.025, cy, cz); scene.add(glass);
   const latch = box(0.02, 0.09, 0.03, M.applPanel, front - 0.04, cy, cz - R - 0.005);
 }
-appliance(RUN_B.z0 - APP_W, RUN_B.z0, false);              // washer, nearest the sink
+appliance(RUN_B.z0 - EP - APP_W, RUN_B.z0 - EP, false);    // washer, nearest the sink
+// end panel: floor to underside of the worktop, front flush with the washer front / face plate
+bb(RUN_R.x0, 0, RUN_B.z0 - EP, W, TOP0, RUN_B.z0, M.cab);
 appliance(RUN_R.z0 + 0.018, RUN_R.z0 + 0.018 + APP_W, true); // dryer, nearest the door
 
 // hollow carcass: open face is the front ('-z' = front at z0, '-x' = front at x0)
@@ -707,6 +713,7 @@ dimLine([XL, 1.0, 0.02], [DOOR.x0 - 0.035, 1.0, 0.02], 'Sill to door frame 480 m
 dimLine([XL, PL + 0.02, L - 0.3], [XL + BU_W, PL + 0.02, L - 0.3], 'Unit 1200 mm', [0, 0, 0]);
 dimLine([0, WT + 0.01, RUN_B.z0 - OH], [W, WT + 0.01, RUN_B.z0 - OH], 'Front 1380 mm', [0, 0.06, -0.04]);
 dimLine([SB, 0.5, RUN_B.z0 - 0.005], [RUN_R.x0, 0.5, RUN_B.z0 - 0.005], 'Face plate 200 × 760 mm', [0, 0, -0.03]);
+dimLine([RUN_R.x0 - 0.005, 0.02, RUN_B.z0 - EP], [RUN_R.x0 - 0.005, TOP0, RUN_B.z0 - EP], 'End panel 870 × 580', [-0.03, 0, -0.03]);
 dimLine([XL + BU_W, PL + 0.02, L - 0.3], [W, PL + 0.02, L - 0.3], `Gap ${Math.round((W - XL - BU_W) * 1000)} mm`, [0, 0, 0]);
 
 // ---- Cutaway: hide walls between the camera and the room ----
