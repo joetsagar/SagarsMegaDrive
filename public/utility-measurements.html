@@ -38,7 +38,7 @@
 <div class="ui">
   <h1>Utility measurements</h1>
   <p id="hint">2780 × 1380 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
-  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Doors &amp; top off</button>
+  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Doors &amp; top off</button><button id="leds" class="on">Lights</button>
 </div>
 
 <div id="plan2d" hidden>
@@ -51,8 +51,10 @@
     <span><i class="sw" style="background:transparent;border-color:var(--wallunit);border-style:dashed"></i>Wall units (above)</span>
     <span><i class="sw" style="background:var(--glass);border-color:var(--muted)"></i>Window</span>
     <span><i class="sw" style="background:var(--heater);border-color:var(--muted)"></i>Electric towel rail</span>
+    <span><i class="sw" style="background:#e0a800;border-color:#e0a800;height:4px"></i>LED strip under wall units</span>
+    <span><i class="sw" style="background:var(--paper);border-color:var(--ink)"></i>Double socket</span>
   </div>
-    <p class="notes">Worktop height 910 mm. Window sills: long window 950 mm, sink window 1030 mm. Wall units 720 mm tall, bottom at 1450 mm. The long window wall is flush with its sill; the 190 mm pillar is the solid wall between the door wall and that window. Electric towel rail 400 × 800 mm, bottom at 250 mm, 90 mm off the wall. Door leaf removed, frame kept. 18 mm end panel between the washer and the 1200 unit, floor to underside of the worktop (870 mm), 580 mm deep. Face plate beside the 600 door: 200 mm wide × 760 mm high (same height as the door), running from the door edge to the washer front line.</p>
+    <p class="notes">Worktop height 910 mm. Window sills: long window 950 mm, sink window 1030 mm. Wall units 720 mm tall, bottom at 1450 mm. The long window wall is flush with its sill; the 190 mm pillar is the solid wall between the door wall and that window. Electric towel rail 400 × 800 mm, bottom at 250 mm, 90 mm off the wall. LED strip lights under the wall units (1500 mm run). Double switched socket on the wall above the washer/dryer join, 1120 mm from the floor (210 mm above the worktop). Door leaf removed, frame kept. 18 mm end panel between the washer and the 1200 unit, floor to underside of the worktop (870 mm), 580 mm deep. Face plate beside the 600 door: 200 mm wide × 760 mm high (same height as the door), running from the door edge to the washer front line.</p>
   </div>
 </div>
 <script>
@@ -176,6 +178,11 @@ for (const [z0, name] of [[dz0, 'Dryer'], [dz0 + APP_W, 'Washer']]) {
 
 // end panel between the washer and the 1200 sink unit
 rect(APP.x0, 2210 - EP, W, 2210, 'unitLine', null);
+
+// LED strip under the wall units + double socket on the wall above the machines
+el('line', { x1: W - 280, y1: 950, x2: W - 280, y2: 2410, stroke: '#e0a800', 'stroke-width': 10, 'stroke-dasharray': '30 14' });
+{ const zc = 930 + 18 + APP_W; rect(W - 30, zc - 73, W, zc + 73, 'paper', 'ink', { 'stroke-width': 5 });
+  text(W - 70, zc, 'Socket', { size: 30, color: 'ink', rot: -90 }); }
 
 // ---- Wall units above (dashed) ----
 for (const [z0, z1, doors] of [[...WU.a, 2], [...WU.b, 1]]) {
@@ -620,6 +627,30 @@ function wallUnit(z0, w, doors) {
 wallUnit(PASS.z1, 1.2, 2);
 wallUnit(PASS.z1 + 1.2, 0.3, 1);
 
+// ---- LED strip lights under the wall units ----
+const ledGroup = new THREE.Group(); scene.add(ledGroup);
+{
+  const ledMat = new THREE.MeshStandardMaterial({ color: 0xfff6e0, emissive: 0xfff1d0, emissiveIntensity: 2.2 });
+  const z0 = PASS.z1 + 0.02, z1 = PASS.z1 + 1.5 - 0.02, x = W - WU.d + 0.04;   // near the front edge of the units
+  bb(x - 0.006, WU.y0 - 0.006, z0, x + 0.006, WU.y0, z1, ledMat, ledGroup, false);
+  for (let i = 0; i < 4; i++) {                       // light washing down onto the worktop
+    const sp = new THREE.SpotLight(0xffe9c4, 1.6, 1.6, Math.PI / 2.6, 0.8, 1.5);
+    const z = z0 + (z1 - z0) * (i + 0.5) / 4;
+    sp.position.set(x, WU.y0 - 0.01, z); sp.target.position.set(x - 0.05, WT, z);
+    ledGroup.add(sp, sp.target);
+  }
+}
+
+// ---- Double socket on the wall above the washer & dryer (on the tiles) ----
+{
+  const zc = RUN_R.z0 + 0.018 + APP_W, y = 1.12, face = W - 0.012;     // centred over the join of the two machines
+  bb(face - 0.009, y - 0.043, zc - 0.073, face, y + 0.043, zc + 0.073, M.pvc, ROOT, false);   // 146 x 86 plate
+  for (const dz of [-0.035, 0.035]) {
+    bb(face - 0.011, y - 0.022, zc + dz - 0.018, face - 0.009, y + 0.012, zc + dz + 0.018, M.applPanel, ROOT, false); // outlet
+    bb(face - 0.013, y + 0.018, zc + dz + 0.006, face - 0.009, y + 0.034, zc + dz + 0.020, M.applPanel, ROOT, false); // switch
+  }
+}
+
 // ---- Electric towel rail on the door wall, between the window wall and the door frame ----
 {
   const TR = { x0: 0.04, x1: 0.44, y0: 0.25, y1: 1.05, off: 0.09 };  // 400 W x 800 H, ladder style
@@ -714,6 +745,7 @@ dimLine([XL, PL + 0.02, L - 0.3], [XL + BU_W, PL + 0.02, L - 0.3], 'Unit 1200 mm
 dimLine([0, WT + 0.01, RUN_B.z0 - OH], [W, WT + 0.01, RUN_B.z0 - OH], 'Front 1380 mm', [0, 0.06, -0.04]);
 dimLine([SB, 0.5, RUN_B.z0 - 0.005], [RUN_R.x0, 0.5, RUN_B.z0 - 0.005], 'Face plate 200 × 760 mm', [0, 0, -0.03]);
 dimLine([RUN_R.x0 - 0.005, 0.02, RUN_B.z0 - EP], [RUN_R.x0 - 0.005, TOP0, RUN_B.z0 - EP], 'End panel 870 × 580', [-0.03, 0, -0.03]);
+dimLine([W - 0.02, WT, RUN_R.z0 + 0.018 + APP_W + 0.1], [W - 0.02, 1.12, RUN_R.z0 + 0.018 + APP_W + 0.1], 'Double socket, 210 above worktop', [0, 0, 0]);
 dimLine([XL + BU_W, PL + 0.02, L - 0.3], [W, PL + 0.02, L - 0.3], `Gap ${Math.round((W - XL - BU_W) * 1000)} mm`, [0, 0, 0]);
 
 // ---- Cutaway: hide walls between the camera and the room ----
@@ -751,6 +783,7 @@ function go(name, instant) {
   anim = { from: { pos: camera.position.clone(), tgt: controls.target.clone() }, to, t: 0 };
 }
 for (const id of ['v3d', 'vdoor', 'vplan', 'vsink']) document.getElementById(id).onclick = () => go(id);
+document.getElementById('leds').onclick = e => { ledGroup.visible = !ledGroup.visible; e.target.classList.toggle('on', ledGroup.visible); };
 document.getElementById('open').onclick = e => {
   const off = doorsGroup.visible;
   doorsGroup.visible = topGroup.visible = !off;
