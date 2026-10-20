@@ -30,6 +30,10 @@
   #plan2d .sw { width:16px; height:12px; border:1.5px solid; border-radius:2px; display:inline-block; }
   #plan2d .notes { margin-top:14px; font-size:13px; color:var(--muted); line-height:1.5; }
   @media print { .ui, #c { display:none !important; } #plan2d { position:static; padding:0; background:#fff; } #plan2d[hidden] { display:block; } }
+  #scheme { position:fixed; left:16px; bottom:16px; z-index:10; background:var(--panel); padding:10px 12px; border-radius:10px;
+    box-shadow:0 2px 12px rgba(0,0,0,.15); max-width:min(420px, calc(100vw - 60px)); font-size:12px; line-height:1.45; }
+  #scheme b { font-size:13px; } #scheme .sw { display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:4px; border:1px solid rgba(0,0,0,.2); }
+  #plan2d:not([hidden]) ~ #scheme { display:none; }
   .lbl { font-size:12px; font-weight:600; background:rgba(255,255,255,.9); color:#222; padding:2px 6px; border-radius:4px; white-space:nowrap; pointer-events:none; }
 </style>
 </head>
@@ -38,7 +42,7 @@
 <div class="ui">
   <h1>Utility measurements</h1>
   <p id="hint">2780 × 1380 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
-  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button>
+  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button><button id="schemeBtn">Scheme 1/5 ▸</button>
 </div>
 
 <div id="plan2d" hidden>
@@ -246,6 +250,8 @@ text(W / 2, L + T + 520, 'Sink wall', { size: 40, color: 'muted' });
   if (location.hash === '#plan2d') btn.click();
 })();
 </script>
+
+<div id="scheme"></div>
 
 <script type="importmap">
 { "imports": {
@@ -705,11 +711,14 @@ bb(SINK.x1, TOP0, SINK.z0, W, WT, SINK.z1, M.wood); // right
 ROOT = scene;
 // upstand / tiled splashback along both runs
 // tiled splashback panel with consistent ~75 mm tiles (each texture repeat = 8 tiles = 600 mm)
+const splashMats = [];
 function tiles(x0, y0, z0, x1, y1, z1) {
   const t = splashTex.clone(); t.needsUpdate = true;
   const len = Math.max(x1 - x0, z1 - z0);
   t.repeat.set(len / 0.6, (y1 - y0) / 0.6);
-  bb(x0, y0, z0, x1, y1, z1, new THREE.MeshStandardMaterial({ map: t, roughness: 0.25 }), scene, false);
+  const m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.25 });
+  m.userData.rep = t.repeat.clone(); splashMats.push(m);
+  bb(x0, y0, z0, x1, y1, z1, m, scene, false);
 }
 const TILE_TOP = WU.y0;                                   // tiles run up to the underside of the wall units (1450)
 tiles(0, WT, L - 0.012, W, WIN_B.sill, L);                // sink wall, worktop to window sill
@@ -813,6 +822,84 @@ function go(name, instant) {
 }
 for (const id of ['v3d', 'vdoor', 'vplan', 'vsink']) document.getElementById(id).onclick = () => go(id);
 document.getElementById('leds').onclick = e => { ledGroup.visible = !ledGroup.visible; e.target.classList.toggle('on', ledGroup.visible); };
+
+// ---- Colour schemes (cycle with the Scheme button) ----
+// Units: B&Q GoodHome Ashmead in Pebble or Reed Green (colours approximate - check real samples).
+const UNIT = {
+  pebble: { name: 'Ashmead Pebble', cab: 0xa9a294, edge: 0x9c9587, plinth: 0x7a7468 },
+  reed:   { name: 'Ashmead Reed Green', cab: 0x9ca790, edge: 0x8f9a84, plinth: 0x6c7566 },
+};
+const SCHEMES = [
+  { unit: 'pebble', tiles: { name: 'Warm white gloss square, 100 × 100', layout: 'square', tile: '#f4f1e8', grout: '#c9c2b5', jitter: 4, rough: 0.2 },
+    grout: 'warm grey grout', floor: { name: 'Greige stone-effect porcelain, 600 × 600', type: 'plain', tile: '#c4bcaf', grout: '#a39b8f' },
+    wall: { name: 'Farrow & Ball School House White', hex: 0xeee9dd } },
+  { unit: 'pebble', tiles: { name: 'Handmade-look warm white metro, 75 × 150 vertical stack', layout: 'metro', tile: '#f2eee3', grout: '#d5ccba', jitter: 12, rough: 0.15 },
+    grout: '"jasmine" grout', floor: { name: 'Warm grey stone-effect porcelain, 300 × 600', type: 'plank', tile: '#aea699', grout: '#8f887c' },
+    wall: { name: 'Farrow & Ball Skimming Stone', hex: 0xdcd3c5 } },
+  { unit: 'pebble', tiles: { name: 'Soft sage gloss square, 100 × 100', layout: 'square', tile: '#b8c2ac', grout: '#e3ded2', jitter: 6, rough: 0.2 },
+    grout: 'off-white grout', floor: { name: 'Greige stone-effect porcelain, 600 × 600', type: 'plain', tile: '#c4bcaf', grout: '#a39b8f' },
+    wall: { name: 'Little Greene Slaked Lime', hex: 0xe7e2d6 } },
+  { unit: 'reed', tiles: { name: 'Warm white gloss square, 100 × 100', layout: 'square', tile: '#f4f1e8', grout: '#cfcabf', jitter: 4, rough: 0.2 },
+    grout: 'light warm grey grout', floor: { name: 'Greige stone-effect porcelain, 600 × 600', type: 'plain', tile: '#c4bcaf', grout: '#a39b8f' },
+    wall: { name: 'Farrow & Ball Wimborne White', hex: 0xf1ecdd } },
+  { unit: 'reed', tiles: { name: 'Handmade-look warm white metro, 75 × 150 vertical stack', layout: 'metro', tile: '#f2eee3', grout: '#d5ccba', jitter: 12, rough: 0.15 },
+    grout: '"jasmine" grout', floor: { name: 'Patterned encaustic-look tile (grey / white / sage), 200 × 200', type: 'pattern', tile: '#ece8df', grout: '#b9b3a8', ink: '#7f8a78', ink2: '#a8a397' },
+    wall: { name: 'Dulux Egyptian Cotton', hex: 0xebe4d6 } },
+];
+
+function splashTexture(o) {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d'); g.fillStyle = o.grout; g.fillRect(0, 0, 512, 512);
+  const [cw, ch] = o.layout === 'metro' ? [64, 128] : [64, 64];   // 600 mm per repeat: 75 x 75 or 75 x 150 tiles
+  for (let x = 0; x < 512; x += cw) for (let y = 0; y < 512; y += ch) {
+    g.fillStyle = shade(o.tile, ((Math.random() * 2 - 1) * o.jitter) | 0);
+    g.fillRect(x + 2, y + 2, cw - 4, ch - 4);
+    if (o.jitter > 8) { g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(x + 4, y + 4, cw * 0.4, ch * 0.3); }  // glaze highlight
+  }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+function floorTexture(o) {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d'); g.fillStyle = o.grout; g.fillRect(0, 0, 512, 512);
+  if (o.type === 'pattern') {                    // 200 mm encaustic tiles: 4 per 600 mm repeat would be 3; use 12 x 12 grid over 2.4 m
+    const n = 12, sz = 512 / n;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      const x = i * sz, y = j * sz; g.fillStyle = o.tile; g.fillRect(x + 1, y + 1, sz - 2, sz - 2);
+      g.fillStyle = o.ink; g.beginPath(); g.moveTo(x + sz / 2, y + 3); g.lineTo(x + sz - 3, y + sz / 2); g.lineTo(x + sz / 2, y + sz - 3); g.lineTo(x + 3, y + sz / 2); g.closePath(); g.fill();
+      g.fillStyle = o.tile; g.beginPath(); g.arc(x + sz / 2, y + sz / 2, sz * 0.22, 0, Math.PI * 2); g.fill();
+      g.fillStyle = o.ink2; for (const [cx, cy] of [[x, y], [x + sz, y], [x, y + sz], [x + sz, y + sz]]) { g.beginPath(); g.arc(cx, cy, sz * 0.18, 0, Math.PI * 2); g.fill(); }
+    }
+  } else {
+    const [cw, ch] = o.type === 'plank' ? [128, 256] : [128, 128];   // 2.4 m per repeat: 600 x 600 or 300 x 600
+    for (let x = 0; x < 512; x += cw) for (let y = 0; y < 512; y += ch) {
+      g.fillStyle = shade(o.tile, ((Math.random() * 2 - 1) * 6) | 0); g.fillRect(x + 2, y + 2, cw - 4, ch - 4);
+    }
+  }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  t.repeat.copy(floorTex.repeat); return t;
+}
+const hex = n => '#' + n.toString(16).padStart(6, '0');
+let schemeIdx = 0;
+function applyScheme(i) {
+  schemeIdx = (i + SCHEMES.length) % SCHEMES.length;
+  const sc = SCHEMES[schemeIdx], u = UNIT[sc.unit];
+  M.cab.color.setHex(u.cab); M.cabEdge.color.setHex(u.edge); M.plinth.color.setHex(u.plinth);
+  M.wall.color.setHex(sc.wall.hex);
+  const st = splashTexture(sc.tiles);
+  for (const m of splashMats) { const t = st.clone(); t.needsUpdate = true; t.repeat.copy(m.userData.rep); m.map = t; m.roughness = sc.tiles.rough; m.needsUpdate = true; }
+  M.floor.map = floorTexture(sc.floor); M.floor.needsUpdate = true;
+  document.getElementById('schemeBtn').textContent = `Scheme ${schemeIdx + 1}/${SCHEMES.length} ▸`;
+  const sw = c => `<span class="sw" style="background:${c}"></span>`;
+  document.getElementById('scheme').innerHTML =
+    `<b>Scheme ${schemeIdx + 1}: ${u.name}</b><br>` +
+    `${sw(hex(u.cab))}Units: ${u.name} (oak worktop)<br>` +
+    `${sw(sc.tiles.tile)}Splashback: ${sc.tiles.name}, ${sc.grout}<br>` +
+    `${sw(sc.floor.tile)}Floor: ${sc.floor.name}<br>` +
+    `${sw(hex(sc.wall.hex))}Walls: ${sc.wall.name}`;
+}
+document.getElementById('schemeBtn').onclick = () => applyScheme(schemeIdx + 1);
+applyScheme(0);
 document.getElementById('open').onclick = e => {
   const off = doorsGroup.visible;
   doorsGroup.visible = topGroup.visible = applGroup.visible = !off;
