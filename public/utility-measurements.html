@@ -58,7 +58,7 @@
     <span><i class="sw" style="background:#e0a800;border-color:#e0a800;height:4px"></i>LED strip under wall units</span>
     <span><i class="sw" style="background:var(--paper);border-color:var(--ink)"></i>Triple socket</span>
   </div>
-    <p class="notes">Worktop height 910 mm. Window sills: long window 950 mm, sink window 1030 mm. Wall units 720 mm tall, bottom at 1450 mm. The long window wall is flush with its sill; the 190 mm pillar is the solid wall between the door wall and that window. Electric towel rail 400 × 800 mm, bottom at 250 mm, 90 mm off the wall. LED strip lights under the wall units (1500 mm run). Triple (3-gang) switched socket, 225 × 86 mm, on the wall above the washer/dryer join, 1120 mm from the floor (210 mm above the worktop). 120 mm white skirting on the long-window wall and both sides of the door wall. Door leaf removed, frame kept. 18 mm end panel between the washer and the 1200 unit, floor to underside of the worktop (870 mm), 580 mm deep. Face plate beside the 600 door: 200 mm wide × 760 mm high (same height as the door), running from the door edge to the washer front line.</p>
+    <p class="notes">Worktop height 910 mm. Window sills: long window 950 mm, sink window 1030 mm. Wall units 720 mm tall, bottom at 1450 mm. The long window wall is flush with its sill; the 190 mm pillar is the solid wall between the door wall and that window. Electric towel rail 400 × 800 mm, bottom at 250 mm, 90 mm off the wall. LED strip lights under the wall units (1500 mm run). Triple (3-gang) switched socket, 225 × 86 mm, on the wall above the washer/dryer join, 1120 mm from the floor (210 mm above the worktop). 120 mm white skirting on the long-window wall and both sides of the door wall. Worktops: sink-wall top 1380 × 600 runs the full width; the washer-side top is a separate 1250 × 600 piece butting into it (1850 overall along that wall). Door leaf removed, frame kept. 18 mm end panel between the washer and the 1200 unit, floor to underside of the worktop (870 mm), 580 mm deep. Face plate beside the 600 door: 200 mm wide × 760 mm high (same height as the door), running from the door edge to the washer front line.</p>
   </div>
 </div>
 <script>
@@ -221,6 +221,8 @@ dim(HEAT.x0, HEAT.z1, HEAT.x1, HEAT.z1, 70, 'Towel rail 400', true);
 // right side: passage, worktop 1850, wall units
 dim(W + T, PASS.z0, W + T, PASS.z1, 180, 'Opening 930');
 dim(W + T, RUN_R.z0, W + T, L, 180, 'Worktop 1850');
+// washer-side worktop piece on its own: from its end to where it butts the sink-wall top
+dim(RUN_R.x0, RUN_R.z0, RUN_R.x0, RUN_R.z1, -70, `Top ${RUN_R.z1 - RUN_R.z0} × 600`, true);
 dim(W + T, WU.a[0], W + T, WU.a[1], 400, 'Wall unit 1200', true);
 dim(W + T, WU.b[0], W + T, WU.b[1], 400, '300', true);
 // worktop depths
@@ -784,6 +786,7 @@ dimLine([0.9, WIN_B.sill + 0.01, L], [0.9, WIN_B.sill + 0.01, L + WIN_B.recess],
 dimLine([W - 0.005, WT + 0.01, RUN_R.z0], [W - 0.005, WT + 0.01, L], 'Worktop 1850 mm', [-0.03, 0, 0]);
 dimLine([RUN_R.x0 - OH, WT + 0.01, 1.3], [W, WT + 0.01, 1.3], 'Depth 600 mm', [0, 0.01, 0]);
 dimLine([1.15, WT + 0.01, RUN_B.z0 - OH], [1.15, WT + 0.01, L], 'Depth 600 mm', [0, 0.01, 0]);
+dimLine([RUN_R.x0 - OH, WT + 0.012, RUN_R.z0], [RUN_R.x0 - OH, WT + 0.012, RUN_B.z0 - OH], `Washer top ${Math.round((RUN_B.z0 - OH - RUN_R.z0) * 1000)} × 600 mm`, [0, 0.03, 0]);
 dimLine([0.04, 1.09, 0.09], [0.44, 1.09, 0.09], 'Electric towel rail 400 × 800 mm', [0, 0, 0]);
 dimLine([XL + 0.005, 1.6, 0], [XL + 0.005, 1.6, PILLAR.z], 'Pillar 190 mm', [0.04, 0, 0]);
 dimLine([XL, 1.0, 0.02], [DOOR.x0 - 0.035, 1.0, 0.02], 'Sill to door frame 480 mm', [0, 0, 0]);
