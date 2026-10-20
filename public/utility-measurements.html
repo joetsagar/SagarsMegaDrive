@@ -17,10 +17,10 @@
   .ui button.on { background:var(--accent); color:#fff; }
   .ui { z-index:10; }
   #plan2d { position:fixed; inset:0; overflow:auto; background:var(--bg); z-index:5; padding:150px 16px 40px; box-sizing:border-box;
-    --paper:#ffffff; --wall:#2b2d31; --unit:#dfe8e1; --unitLine:#5d7a68; --top:#e9d4b4; --topLine:#a67c45;
-    --appl:#f1f1ef; --glass:#bfe0f0; --dim:#2f6f5e; --wallunit:#5d7a68; --heater:#f3d9d2; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#8fb39d; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#8fb39d; --heater:#4a3430; } }
-  :root[data-theme="dark"] #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#8fb39d; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#8fb39d; --heater:#4a3430; }
+    --paper:#ffffff; --wall:#2b2d31; --unit:#dfe8e1; --unitLine:#8c8578; --top:#e9d4b4; --topLine:#a67c45;
+    --appl:#f1f1ef; --glass:#bfe0f0; --dim:#2f6f5e; --wallunit:#8c8578; --heater:#f3d9d2; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#c9c1b2; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#c9c1b2; --heater:#4a3430; } }
+  :root[data-theme="dark"] #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#c9c1b2; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#c9c1b2; --heater:#4a3430; }
   #plan2d[hidden] { display:none; }
   #plan2d .wrap { max-width:1000px; margin:0 auto; }
   #plan2d .sheet { background:var(--paper); border-radius:10px; box-shadow:0 1px 8px rgba(0,0,0,.08); padding:8px; }
@@ -369,10 +369,10 @@ const M = {
   wallTop: new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 }),
   floor: new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.6 }),
   outside: new THREE.MeshStandardMaterial({ color: 0xdedad2, roughness: 1 }),
-  cab: new THREE.MeshStandardMaterial({ color: 0x8fa596, roughness: 0.55 }),
-  cabEdge: new THREE.MeshStandardMaterial({ color: 0x80968a, roughness: 0.6 }),
+  cab: new THREE.MeshStandardMaterial({ color: 0xa9a294, roughness: 0.55 }),      // Ashmead Pebble (approx.)
+  cabEdge: new THREE.MeshStandardMaterial({ color: 0x9c9587, roughness: 0.6 }),
   carc: new THREE.MeshStandardMaterial({ color: 0xf1f0ea, roughness: 0.6 }),
-  plinth: new THREE.MeshStandardMaterial({ color: 0x5f6d64, roughness: 0.7 }),
+  plinth: new THREE.MeshStandardMaterial({ color: 0x7a7468, roughness: 0.7 }),
   wood: new THREE.MeshStandardMaterial({ map: woodTex(), roughness: 0.45 }),
   steel: new THREE.MeshStandardMaterial({ color: 0xdfe2e5, metalness: 0.55, roughness: 0.3 }),
   steelIn: new THREE.MeshStandardMaterial({ color: 0xc9cdd1, metalness: 0.55, roughness: 0.35, side: THREE.BackSide }),
