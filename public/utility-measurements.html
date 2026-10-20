@@ -23,7 +23,11 @@
   :root[data-theme="dark"] #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#c9c1b2; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#c9c1b2; --heater:#4a3430; }
   #plan2d[hidden] { display:none; }
   #plan2d .wrap { max-width:1000px; margin:0 auto; }
-  #plan2d .sheet { background:var(--paper); border-radius:10px; box-shadow:0 1px 8px rgba(0,0,0,.08); padding:8px; }
+  #plan2d .sheet { background:#fff; border-radius:4px; box-shadow:0 1px 8px rgba(0,0,0,.12); padding:8px; }
+  #plan2d .sched { width:100%; border-collapse:collapse; margin-top:14px; font:12px/1.4 Arial, Helvetica, sans-serif; background:#fff; color:#1d1d1f; }
+  #plan2d .sched th, #plan2d .sched td { border:1px solid #1d1d1f; padding:5px 8px; text-align:left; vertical-align:top; }
+  #plan2d .sched th { background:#f2f2f2; font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:.04em; }
+  #plan2d .sched td:first-child, #plan2d .sched th:first-child { width:28px; text-align:center; font-weight:700; }
   #plan2d svg { width:100%; height:auto; display:block; }
   #plan2d .legend { display:flex; flex-wrap:wrap; gap:14px; margin-top:12px; font-size:12px; color:var(--muted); }
   #plan2d .legend span { display:inline-flex; align-items:center; gap:6px; }
@@ -48,198 +52,224 @@
 <div id="plan2d" hidden>
   <div class="wrap">
     <div class="sheet"><svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg></div>
-    <div class="legend">
-    <span><i class="sw" style="background:var(--wall);border-color:var(--wall)"></i>Wall</span>
-    <span><i class="sw" style="background:var(--top);border-color:var(--topLine)"></i>Worktop</span>
-    <span><i class="sw" style="background:var(--appl);border-color:var(--muted)"></i>Washer / dryer</span>
-    <span><i class="sw" style="background:transparent;border-color:var(--wallunit);border-style:dashed"></i>Wall units (above)</span>
-    <span><i class="sw" style="background:var(--glass);border-color:var(--muted)"></i>Window</span>
-    <span><i class="sw" style="background:var(--heater);border-color:var(--muted)"></i>Electric towel rail</span>
-    <span><i class="sw" style="background:#e0a800;border-color:#e0a800;height:4px"></i>LED strip under wall units</span>
-    <span><i class="sw" style="background:var(--paper);border-color:var(--ink)"></i>Triple socket</span>
-  </div>
-    <p class="notes">Worktop height 910 mm. Window sills: long window 950 mm, sink window 1030 mm. Wall units 720 mm tall, bottom at 1450 mm. The long window wall is flush with its sill; the 190 mm pillar is the solid wall between the door wall and that window. Electric towel rail 400 × 800 mm, bottom at 250 mm, 90 mm off the wall. LED strip lights under the wall units (1500 mm run). Triple (3-gang) switched socket, 225 × 86 mm, on the wall above the washer/dryer join, 1120 mm from the floor (210 mm above the worktop). 120 mm white skirting on the long-window wall and both sides of the door wall. Worktops: sink-wall top 1380 × 600 runs the full width; the washer-side top is a separate 1250 × 600 piece butting into it (1850 overall along that wall). Door leaf removed, frame kept. 18 mm end panel between the washer and the 1200 unit, floor to underside of the worktop (870 mm), 580 mm deep. Face plate beside the 600 door: 200 mm wide × 760 mm high (same height as the door), running from the door edge to the washer front line.</p>
+    <table class="sched">
+      <thead><tr><th>#</th><th>Item</th><th>Size (mm)</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Tumble dryer (TD)</td><td>600 w space</td><td>Under worktop, door end</td></tr>
+        <tr><td>2</td><td>Washing machine (WM)</td><td>600 w space</td><td>Under worktop, next to sink run</td></tr>
+        <tr><td>3</td><td>Base unit, blind corner</td><td>1200 × 560 × 720</td><td>600 door under sink bowl, blind section behind WM</td></tr>
+        <tr><td>4</td><td>Face plate</td><td>200 × 760</td><td>Door edge to WM front line</td></tr>
+        <tr><td>5</td><td>End panel</td><td>870 × 580 × 18</td><td>Between WM and base unit, floor to underside of top</td></tr>
+        <tr><td>6</td><td>Gap</td><td>180</td><td>Base unit to washer-wall, under sink top</td></tr>
+        <tr><td>7</td><td>Wall units (over)</td><td>1200 + 300, 320 d × 720 h</td><td>Underside at 1450 AFF; LED strip below</td></tr>
+        <tr><td>8</td><td>Electric towel rail</td><td>400 × 800</td><td>Bottom at 250 AFF, 90 off wall</td></tr>
+        <tr><td>9</td><td>Triple switched socket</td><td>225 × 86</td><td>1120 AFF (210 above worktop)</td></tr>
+        <tr><td>10</td><td>Inset sink, bowl + drainer</td><td>1000 × 490</td><td>Bowl over the 600 door</td></tr>
+        <tr><td>11</td><td>Window, tiled sill &amp; reveals</td><td>1990, 190 deep reveal</td><td>Sill at 950 AFF</td></tr>
+        <tr><td>—</td><td>Worktops</td><td>1380 × 600 + 1250 × 600</td><td>Sink-wall top full width; washer top butts into it</td></tr>
+        <tr><td>—</td><td>Sink window</td><td>1100 w</td><td>Recessed 40, sill 1030 AFF</td></tr>
+      </tbody>
+    </table>
+    <p class="notes">AFF = above finished floor. Worktop 910 AFF. Skirting 120 mm. Door leaf removed, frame kept. Dashed lines are overhead (wall units). Check all dimensions on site before ordering.</p>
   </div>
 </div>
 <script>
 // ---- 2D plan (drawn to scale, mm) ----
 (() => {
 // ---- Geometry (mm). x: left wall (0) → right wall (1380). z: door wall (0) → sink wall (2780). ----
+// Architectural plan: black linework on white, hatched walls, dimension strings in tiers outside
+// the room, numbered tags keyed to the schedule below the drawing.
 const W = 1380, L = 2780, T = 180, TL = 320;
 const DOOR = { x0: 515, x1: 1275, arch: 35 };
-const PASS = { z0: 0, z1: 930 };
+const PASS = { z1: 930 };
 const WIN_L = { z0: 190, z1: 2180, reveal: 190 };
 const WIN_B = { x0: 270, x1: 1370, recess: 40 };
-const RUN_R = { x0: 780, z0: 930, z1: 2180 };        // worktop front edge x=780 (600 deep)
-const RUN_B = { z0: 2180 };                          // sink worktop front edge (600 deep)
-const UNIT = { x0: 0, x1: 1200, z0: 2200, door: 600 };
+const TOP_R = { x0: 780, z0: 930, z1: 2180 };          // washer-side worktop 1250 × 600
+const TOP_B = { z0: 2180 };                             // sink-wall worktop 1380 × 600
+const UNIT = { x1: 1200, z0: 2200, door: 600 };         // 1200 base unit, carcass front at z=2200
+const FRONT = 800;                                      // washer / face-plate front line
+const EP = 18, APP_W = (UNIT.z0 - EP - TOP_R.z0 - 18) / 2;
 const SINK = { x0: 40, x1: 1040, z0: 2240, z1: 2730 }, BOWL = { x0: 90, x1: 510, z0: 2310, z1: 2660 };
-const EP = 18, APP = { x0: 800, x1: 1350 }, APP_W = (2200 - EP - 930 - 18) / 2;
 const WU = { x0: W - 320, a: [930, 2130], b: [2130, 2430] };
-const HEAT = { x0: 40, x1: 440, z0: 75, z1: 105 };   // electric towel rail, 90 mm off the wall
+const RAIL = { x0: 40, x1: 440, z0: 75, z1: 105 };
+const SOCKET_Z = TOP_R.z0 + 18 + APP_W;
 
+const INK = '#1d1d1f', MID = '#555', LIGHT = '#8a8a8a', DIMC = '#1d1d1f';
 const svg = document.getElementById('plan');
 const NS = 'http://www.w3.org/2000/svg';
-const VB = { x: -1050, y: -950, w: 3350, h: 4400 };
+const VB = { x: -1150, y: -1000, w: 3450, h: 4700 };
 svg.setAttribute('viewBox', `${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
 function el(tag, attrs, parent = svg) {
   const e = document.createElementNS(NS, tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
   parent.appendChild(e); return e;
 }
-const css = v => `var(--${v})`;
-function rect(x0, z0, x1, z1, fill, stroke, extra = {}) {
-  return el('rect', { x: Math.min(x0, x1), y: Math.min(z0, z1), width: Math.abs(x1 - x0), height: Math.abs(z1 - z0),
-    fill: css(fill), stroke: stroke ? css(stroke) : 'none', 'stroke-width': 6, ...extra });
-}
-function text(x, y, s, opts = {}) {
-  const t = el('text', { x, y, 'font-size': opts.size || 52, fill: css(opts.color || 'ink'), 'text-anchor': opts.anchor || 'middle',
-    'dominant-baseline': 'middle', 'font-family': 'system-ui, sans-serif', 'font-weight': opts.weight || 500,
-    transform: opts.rot ? `rotate(${opts.rot} ${x} ${y})` : '' });
+const line = (x1, y1, x2, y2, w = 3, color = INK, dash) =>
+  el('line', { x1, y1, x2, y2, stroke: color, 'stroke-width': w, ...(dash ? { 'stroke-dasharray': dash } : {}), 'stroke-linecap': 'square' });
+const box = (x0, z0, x1, z1, attrs) => el('rect', { x: Math.min(x0, x1), y: Math.min(z0, z1), width: Math.abs(x1 - x0), height: Math.abs(z1 - z0), ...attrs });
+function text(x, y, s, o = {}) {
+  const t = el('text', { x, y, 'font-size': o.size || 34, fill: o.color || INK, 'text-anchor': o.anchor || 'middle',
+    'dominant-baseline': o.base || 'middle', 'font-family': 'Arial, Helvetica, sans-serif', 'font-weight': o.weight || 400,
+    'letter-spacing': o.ls || 0, transform: o.rot ? `rotate(${o.rot} ${x} ${y})` : '' });
   t.textContent = s; return t;
 }
-// dimension line between (x1,y1) and (x2,y2) (axis-aligned), drawn `off` mm to one side
-function dim(x1, y1, x2, y2, off, label, small) {
+
+// wall hatch (45° lines) for cut walls
+const defs = el('defs', {});
+const pat = el('pattern', { id: 'hatch', width: 40, height: 40, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+el('rect', { width: 40, height: 40, fill: '#ececec' }, pat);
+el('line', { x1: 0, y1: 0, x2: 0, y2: 40, stroke: '#9a9a9a', 'stroke-width': 4 }, pat);
+
+// ---- Dimensions: thin line, 45° ticks, extension lines with a small gap, text above the line ----
+function dim(a, b, at, label, axis, side = -1) {
+  // axis 'x': horizontal string at y=at measuring x=a..b; 'z': vertical string at x=at measuring z=a..b.
+  // side: which side of the line the text sits (-1 = above / left)
   const g = el('g', {});
-  const horiz = y1 === y2;
-  const [ax, ay, bx, by] = horiz ? [x1, y1 + off, x2, y2 + off] : [x1 + off, y1, x2 + off, y2];
-  const s = { stroke: css('dim'), 'stroke-width': 4 };
-  el('line', { x1, y1, x2: ax, y2: ay, ...s, 'stroke-dasharray': '10 8', opacity: .6 }, g);
-  el('line', { x1: x2, y1: y2, x2: bx, y2: by, ...s, 'stroke-dasharray': '10 8', opacity: .6 }, g);
-  el('line', { x1: ax, y1: ay, x2: bx, y2: by, ...s }, g);
-  for (const [px, py] of [[ax, ay], [bx, by]])   // architectural ticks
-    el('line', { x1: px - 18, y1: py + 18, x2: px + 18, y2: py - 18, stroke: css('dim'), 'stroke-width': 6 }, g);
-  const mx = (ax + bx) / 2, my = (ay + by) / 2, size = small ? 40 : 48;
-  const pad = label.length * size * 0.29 + 12;
-  if (horiz) {
-    el('rect', { x: mx - pad, y: my - size * .62, width: pad * 2, height: size * 1.24, fill: css('paper'), rx: 8 }, g);
-    text(mx, my, label, { size, color: 'dim', weight: 600 }).remove(); g.appendChild(text(mx, my, label, { size, color: 'dim', weight: 600 }));
+  const s = { stroke: DIMC, 'stroke-width': 2.5 };
+  const tick = (x, y) => el('line', { x1: x - 16, y1: y + 16, x2: x + 16, y2: y - 16, stroke: DIMC, 'stroke-width': 5 }, g);
+  if (axis === 'x') {
+    el('line', { x1: a - 30, y1: at, x2: b + 30, y2: at, ...s }, g); tick(a, at); tick(b, at);
+    g.appendChild(text((a + b) / 2, at + side * 30, label, { size: 34 }));
   } else {
-    el('rect', { x: mx - size * .62, y: my - pad, width: size * 1.24, height: pad * 2, fill: css('paper'), rx: 8 }, g);
-    g.appendChild(text(mx, my, label, { size, color: 'dim', weight: 600, rot: -90 }));
+    el('line', { x1: at, y1: a - 30, x2: at, y2: b + 30, ...s }, g); tick(at, a); tick(at, b);
+    g.appendChild(text(at + side * 30, (a + b) / 2, label, { size: 34, rot: -90 }));
   }
   return g;
 }
+// extension line from the building to a dimension string
+const ext = (x1, y1, x2, y2) => line(x1, y1, x2, y2, 2, DIMC);
 
-// ---- Floor ----
-rect(0, 0, W, L, 'paper', null);
-rect(DOOR.x0, -T, DOOR.x1, 0, 'paper', null);
-rect(W, PASS.z0, W + T, PASS.z1, 'paper', null);
+// ---- Floor + cut walls ----
+box(-TL, -T, W + T, L + T, { fill: '#fff' });
+const wall = (x0, z0, x1, z1) => box(x0, z0, x1, z1, { fill: 'url(#hatch)', stroke: INK, 'stroke-width': 7 });
+wall(-TL, -T, 0, WIN_L.z0);                      // left wall: pillar end
+wall(-TL, WIN_L.z1, 0, L + T);                   // left wall beside the sink run
+wall(-TL, WIN_L.z0, -WIN_L.reveal - 70, WIN_L.z1);   // outer leaf behind the long window
+wall(-TL, -T, DOOR.x0 - DOOR.arch, 0);           // door wall
+wall(DOOR.x1 + DOOR.arch, -T, W + T, 0);
+wall(W, -550, W + T, -T);                        // wall continuing north
+wall(W, PASS.z1, W + T, L + T);                  // washer wall
+wall(0, L, WIN_B.x0, L + T);                     // sink wall
+wall(WIN_B.x1, L, W + T, L + T);
+wall(WIN_B.x0, L + WIN_B.recess + 70, WIN_B.x1, L + T);
 
-// ---- Walls ----
-const wallG = el('g', {});
-const wr = (x0, z0, x1, z1) => rect(x0, z0, x1, z1, 'wall', null).remove() || wallG.appendChild(rect(x0, z0, x1, z1, 'wall', null));
-// left wall: solid at pillar + beside the sink unit, window reveal in between
-wr(-TL, -T, 0, WIN_L.z0);
-wr(-TL, WIN_L.z1, 0, L + T);
-wr(-TL, WIN_L.z0, -WIN_L.reveal - 70, WIN_L.z1);       // outer skin behind the frame
-// door wall with opening
-wr(-TL, -T, DOOR.x0, 0);
-wr(DOOR.x1, -T, W + T, 0);
-wr(W, -550, W + T, -T);                               // wall stub continuing north
-// right wall from end of passage
-wr(W, PASS.z1, W + T, L + T);
-// sink wall with recessed window
-wr(-TL, L, WIN_B.x0, L + T);
-wr(WIN_B.x1, L, W + T, L + T);
-wr(WIN_B.x0, L + WIN_B.recess + 70, WIN_B.x1, L + T);
+// ---- Windows: frame (two lines), glass line, sill ----
+function windowZ(x0, x1, z0, z1) {   // window in the left wall (frame between x0..x1)
+  box(x0, z0, x1, z1, { fill: '#fff', stroke: INK, 'stroke-width': 4 });
+  line((x0 + x1) / 2, z0, (x0 + x1) / 2, z1, 2, INK);
+}
+windowZ(-WIN_L.reveal - 70, -WIN_L.reveal, WIN_L.z0, WIN_L.z1);
+line(0, WIN_L.z0, 0, WIN_L.z1, 2, MID);                                  // sill front edge
+box(WIN_B.x0, L + WIN_B.recess, WIN_B.x1, L + WIN_B.recess + 70, { fill: '#fff', stroke: INK, 'stroke-width': 4 });
+line(WIN_B.x0, L + WIN_B.recess + 35, WIN_B.x1, L + WIN_B.recess + 35, 2, INK);
+// door opening: frame/architrave only (leaf removed)
+for (const x of [DOOR.x0, DOOR.x1]) box(x - DOOR.arch, -T, x + DOOR.arch, 0, { fill: '#fff', stroke: INK, 'stroke-width': 4 });
+line(DOOR.x0, -T / 2, DOOR.x1, -T / 2, 2, LIGHT, '12 10');              // threshold
 
-// ---- Windows (frame + glass line) and sills ----
-rect(-WIN_L.reveal, WIN_L.z0, 0, WIN_L.z1, 'paper', 'muted', { 'stroke-width': 3 });                    // 190 deep sill
-rect(-WIN_L.reveal - 70, WIN_L.z0, -WIN_L.reveal, WIN_L.z1, 'glass', 'muted', { 'stroke-width': 4 });
-rect(WIN_B.x0, L, WIN_B.x1, L + WIN_B.recess, 'paper', 'muted', { 'stroke-width': 3 });
-rect(WIN_B.x0, L + WIN_B.recess, WIN_B.x1, L + WIN_B.recess + 70, 'glass', 'muted', { 'stroke-width': 4 });
+// ---- Worktops (medium line) ----
+const wt = { fill: '#fff', stroke: INK, 'stroke-width': 4.5 };
+box(TOP_R.x0, TOP_R.z0, W, TOP_B.z0, wt);
+box(0, TOP_B.z0, W, L, wt);
 
-// ---- Door frame (no leaf) ----
-for (const x of [DOOR.x0, DOOR.x1]) rect(x - DOOR.arch, -T, x + DOOR.arch, 12, 'paper', 'muted', { 'stroke-width': 4 });
+// ---- Under-counter items (thin) ----
+// washer / dryer
+for (const [z0, tag] of [[TOP_R.z0 + 18, 'TD'], [TOP_R.z0 + 18 + APP_W, 'WM']]) {
+  box(FRONT + 15, z0 + 12, W - 30, z0 + APP_W - 12, { fill: 'none', stroke: MID, 'stroke-width': 2.5 });
+  el('circle', { cx: (FRONT + W) / 2, cy: z0 + APP_W / 2, r: 190, fill: 'none', stroke: LIGHT, 'stroke-width': 2 });
+  text((FRONT + W) / 2, z0 + APP_W / 2, tag, { size: 44, weight: 700 });
+}
+box(FRONT, UNIT.z0 - EP, W, UNIT.z0, { fill: INK });                    // end panel
+// base unit front, door, face plate, gap
+line(0, UNIT.z0, UNIT.x1, UNIT.z0, 2.5, MID);
+line(UNIT.door, UNIT.z0 - 20, UNIT.door, UNIT.z0 + 20, 2.5, MID);
+box(UNIT.door, TOP_B.z0, FRONT, UNIT.z0, { fill: MID });                // face plate
+line(UNIT.x1, UNIT.z0, UNIT.x1, L, 2.5, MID, '14 10');                 // unit side (hidden below top)
 
-// ---- Worktops ----
-rect(RUN_R.x0, RUN_R.z0, W, RUN_B.z0, 'top', 'topLine');
-rect(0, RUN_B.z0, W, L, 'top', 'topLine');
-// 1200 base unit outline below (dotted) + door + gap
-el('line', { x1: UNIT.x1, y1: UNIT.z0, x2: UNIT.x1, y2: L, stroke: css('unitLine'), 'stroke-width': 5, 'stroke-dasharray': '6 10' });
-el('line', { x1: UNIT.door, y1: UNIT.z0 - 20, x2: UNIT.door, y2: UNIT.z0 + 60, stroke: css('unitLine'), 'stroke-width': 6 });
-rect(UNIT.x1, UNIT.z0 + 30, W - 8, L - 8, 'paper', null, { opacity: .55 });
-text((UNIT.x1 + W) / 2, (UNIT.z0 + L) / 2, 'gap', { size: 34, color: 'muted', rot: -90 });
+// sink
+box(SINK.x0, SINK.z0, SINK.x1, SINK.z1, { fill: '#fff', stroke: INK, 'stroke-width': 3, rx: 20 });
+box(BOWL.x0, BOWL.z0, BOWL.x1, BOWL.z1, { fill: '#fff', stroke: INK, 'stroke-width': 3, rx: 30 });
+el('circle', { cx: (BOWL.x0 + BOWL.x1) / 2, cy: (BOWL.z0 + BOWL.z1) / 2, r: 25, fill: 'none', stroke: INK, 'stroke-width': 2.5 });
+for (let x = BOWL.x1 + 60; x < SINK.x1 - 40; x += 45) line(x, BOWL.z0 + 25, x, BOWL.z1 - 25, 1.5, LIGHT);
+el('circle', { cx: (BOWL.x0 + BOWL.x1) / 2, cy: (BOWL.z1 + SINK.z1) / 2 + 10, r: 18, fill: INK });
 
-// face plate between the 600 door and the washer-run front line
-rect(UNIT.door, UNIT.z0 - 20, APP.x0, UNIT.z0, 'unitLine', null);
-
-// ---- Sink ----
-rect(SINK.x0, SINK.z0, SINK.x1, SINK.z1, 'appl', 'muted', { rx: 18 });
-rect(BOWL.x0, BOWL.z0, BOWL.x1, BOWL.z1, 'paper', 'muted', { rx: 30 });
-el('circle', { cx: (BOWL.x0 + BOWL.x1) / 2, cy: (BOWL.z0 + BOWL.z1) / 2, r: 30, fill: 'none', stroke: css('muted'), 'stroke-width': 5 });
-for (let x = BOWL.x1 + 60; x < SINK.x1 - 40; x += 45)
-  el('line', { x1: x, y1: BOWL.z0 + 20, x2: x, y2: BOWL.z1 - 20, stroke: css('muted'), 'stroke-width': 3, opacity: .7 });
-el('circle', { cx: (BOWL.x0 + BOWL.x1) / 2, cy: (BOWL.z1 + SINK.z1) / 2 + 10, r: 22, fill: css('muted') });
-
-// ---- Washer + dryer (under the worktop) ----
-const dz0 = RUN_R.z0 + 18;
-for (const [z0, name] of [[dz0, 'Dryer'], [dz0 + APP_W, 'Washer']]) {
-  rect(APP.x0, z0 + 6, APP.x1, z0 + APP_W - 6, 'appl', 'muted', { 'stroke-dasharray': '14 8', 'stroke-width': 4 });
-  text(APP.x0 + 120, z0 + APP_W / 2, name, { size: 44, color: 'muted', rot: -90 });
+// ---- Overhead (dashed thin): wall units ----
+for (const [z0, z1] of [WU.a, WU.b]) {
+  box(WU.x0, z0, W, z1, { fill: 'none', stroke: INK, 'stroke-width': 2.5, 'stroke-dasharray': '26 14' });
 }
 
-// end panel between the washer and the 1200 sink unit
-rect(APP.x0, UNIT.z0 - EP, W, UNIT.z0, 'unitLine', null);
+// ---- Towel rail + socket ----
+box(RAIL.x0, RAIL.z0, RAIL.x1, RAIL.z1, { fill: '#fff', stroke: INK, 'stroke-width': 3 });
+for (const x of [RAIL.x0 + 12, RAIL.x1 - 12]) line(x, 0, x, RAIL.z0, 2.5, INK);
+// triple socket: BS-style symbol on the wall face
+box(W - 26, SOCKET_Z - 112, W, SOCKET_Z + 112, { fill: '#fff', stroke: INK, 'stroke-width': 3 });
+for (const dz of [-70, 0, 70]) line(W - 26, SOCKET_Z + dz, W - 60, SOCKET_Z + dz, 3, INK);
 
-// LED strip under the wall units + triple socket on the wall above the machines
-el('line', { x1: W - 280, y1: 950, x2: W - 280, y2: 2410, stroke: '#e0a800', 'stroke-width': 10, 'stroke-dasharray': '30 14' });
-{ const zc = 930 + 18 + APP_W; rect(W - 30, zc - 112, W, zc + 112, 'paper', 'ink', { 'stroke-width': 5 });
-  text(W - 70, zc, 'Socket', { size: 30, color: 'ink', rot: -90 }); }
-
-// ---- Wall units above (dashed) ----
-for (const [z0, z1, doors] of [[...WU.a, 2], [...WU.b, 1]]) {
-  rect(WU.x0, z0, W, z1, 'paper', 'wallunit', { fill: 'none', 'stroke-dasharray': '24 14', 'stroke-width': 6 });
-  if (doors === 2) el('line', { x1: WU.x0, y1: (z0 + z1) / 2, x2: WU.x0 + 60, y2: (z0 + z1) / 2, stroke: css('wallunit'), 'stroke-width': 5 });
+// ---- Numbered tags (keyed to the schedule) ----
+function tag(n, x, y, lx, ly) {
+  if (lx !== undefined) line(lx, ly, x, y, 2, INK);
+  el('circle', { cx: x, cy: y, r: 36, fill: '#fff', stroke: INK, 'stroke-width': 3 });
+  text(x, y + 1, String(n), { size: 34, weight: 700 });
 }
-
-// ---- Electric towel rail (uprights + bars, on brackets) ----
-rect(HEAT.x0, HEAT.z0, HEAT.x1, HEAT.z1, 'heater', 'muted', { 'stroke-width': 4, rx: 12 });
-for (const x of [HEAT.x0 + 12, HEAT.x1 - 12]) el('line', { x1: x, y1: 0, x2: x, y2: HEAT.z0, stroke: css('muted'), 'stroke-width': 6 });
+tag(1, 880, 1010);                                        // dryer
+tag(2, 880, 1630);                                        // washer
+tag(3, 1120, 2420);                                       // 1200 base unit
+tag(4, 700, 2085, 700, 2185);                             // face plate
+tag(5, 1250, 2090, 1250, 2185);                           // end panel
+tag(6, 1290, 2440);                                       // gap
+tag(7, 900, 760, 1150, 930);                              // wall units (leader to their end)
+tag(8, 240, 300, 240, 105);                               // towel rail
+tag(9, 1250, SOCKET_Z, W - 30, SOCKET_Z);                // socket
+tag(10, 760, 2485);                                       // sink
+tag(11, 150, 800, -100, 900);                             // long window
 
 // ---- Room label ----
-text(330, 1300, 'Utility', { size: 80, weight: 700 });
-text(330, 1390, '2780 × 1380', { size: 50, color: 'muted' });
+text(380, 1150, 'UTILITY', { size: 64, weight: 700, ls: 6 });
+text(380, 1230, '2780 × 1380', { size: 34, color: MID });
+text(380, 1280, 'WORKTOP H 910', { size: 28, color: MID });
 
-// ---- Dimensions ----
-// overall
-dim(0, L + T, W, L + T, 330, '1380');
-dim(-TL, 0, -TL, L, -340, '2780');
-// sink wall: 270 + 1100 window (+10 to the right wall)
-dim(0, L + T, WIN_B.x0, L + T, 170, '270', true);
-dim(WIN_B.x0, L + T, WIN_B.x1, L + T, 170, 'Window 1100');
-// left wall: pillar, long window, wall beside sink unit
-dim(-TL, 0, -TL, WIN_L.z0, -160, '190', true);
-dim(-TL, WIN_L.z0, -TL, WIN_L.z1, -160, 'Window 1990');
-dim(-TL, WIN_L.z1, -TL, L, -160, '600', true);
-dim(-WIN_L.reveal, 1150, 0, 1150, 0, 'Sill 190', true);
-// door wall
-dim(0, -T, DOOR.x0 - DOOR.arch, -T, -170, '480', true);
-dim(DOOR.x0, -T, DOOR.x1, -T, -170, 'Opening 760');
-dim(HEAT.x0, HEAT.z1, HEAT.x1, HEAT.z1, 70, 'Towel rail 400', true);
-// right side: passage, worktop 1850, wall units
-dim(W + T, PASS.z0, W + T, PASS.z1, 180, 'Opening 930');
-dim(W + T, RUN_R.z0, W + T, L, 180, 'Worktop 1850');
-// washer-side worktop piece on its own: from its end to where it butts the sink-wall top
-dim(RUN_R.x0, RUN_R.z0, RUN_R.x0, RUN_R.z1, -70, `Top ${RUN_R.z1 - RUN_R.z0} × 600`, true);
-dim(W + T, WU.a[0], W + T, WU.a[1], 400, 'Wall unit 1200', true);
-dim(W + T, WU.b[0], W + T, WU.b[1], 400, '300', true);
-// worktop depths
-dim(RUN_R.x0, RUN_R.z0, W, RUN_R.z0, -70, '600', true);
-dim(1110, RUN_B.z0, 1110, L, 0, '600', true);
-// base unit + gap
-dim(0, RUN_B.z0, UNIT.door, RUN_B.z0, -100, 'Door 600', true);
-dim(UNIT.door, RUN_B.z0, APP.x0, RUN_B.z0, -100, 'Face plate 200', true);
-dim(0, RUN_B.z0, UNIT.x1, RUN_B.z0, -200, 'Unit 1200', true);
-dim(UNIT.x1, RUN_B.z0, W, RUN_B.z0, -200, '180', true);
-dim(0, RUN_B.z0, W, RUN_B.z0, -300, 'Sink counter front 1380');
-// walkway
-dim(0, 1700, RUN_R.x0, 1700, 0, 'Walkway 780');
+// ---- Dimension strings ----
+// left wall (tier 1: segments, tier 2: overall)
+const LX1 = -TL - 170, LX2 = -TL - 330;
+for (const z of [0, WIN_L.z0, WIN_L.z1, L]) ext(-TL - 40, z, LX2 - 30, z);
+dim(0, WIN_L.z0, LX1, '190', 'z'); dim(WIN_L.z0, WIN_L.z1, LX1, 'WINDOW 1990', 'z'); dim(WIN_L.z1, L, LX1, '600', 'z');
+dim(0, L, LX2, '2780', 'z');
+// sink wall (bottom)
+const BY1 = L + T + 170, BY2 = L + T + 330;
+for (const x of [0, WIN_B.x0, WIN_B.x1, W]) ext(x, L + T + 40, x, BY2 + 30);
+dim(0, WIN_B.x0, BY1, '270', 'x', 1); dim(WIN_B.x0, WIN_B.x1, BY1, 'WINDOW 1100', 'x', 1);
+dim(0, W, BY2, '1380', 'x', 1);
+// door wall (top)
+const TY1 = -T - 170, TY2 = -T - 330;
+for (const x of [0, DOOR.x0 - DOOR.arch, DOOR.x0, DOOR.x1, DOOR.x1 + DOOR.arch, W]) ext(x, -T - 40, x, TY1 - 30);
+ext(0, -T - 40, 0, TY2 - 30); ext(W, -T - 40, W, TY2 - 30);
+dim(0, DOOR.x0 - DOOR.arch, TY1, '480', 'x'); dim(DOOR.x0, DOOR.x1, TY1, 'OPENING 760', 'x');
+dim(0, W, TY2, '1380', 'x');
+// washer wall (right)
+const RX1 = W + T + 170, RX2 = W + T + 330;
+for (const z of [0, PASS.z1, TOP_B.z0, L]) ext(W + T + 40, z, RX2 + 30, z);
+dim(0, PASS.z1, RX1, 'OPENING 930', 'z', 1); dim(PASS.z1, TOP_B.z0, RX1, '1250', 'z', 1); dim(TOP_B.z0, L, RX1, '600', 'z', 1);
+dim(PASS.z1, L, RX2, 'WORKTOP 1850', 'z', 1);
+// inside: run along the sink-unit front (one chain) + walkway + worktop depths
+const CY = TOP_B.z0 - 280;
+for (const x of [0, UNIT.door, FRONT]) ext(x, TOP_B.z0 - 20, x, CY - 25);
+dim(0, UNIT.door, CY, 'DOOR 600', 'x'); dim(UNIT.door, FRONT, CY, '200', 'x');
+dim(UNIT.x1, W, L - 70, 'GAP 180', 'x');
+dim(0, TOP_R.x0, 1560, 'CLEAR 780', 'x');
+dim(TOP_R.x0, W, TOP_R.z0 - 70, '600', 'x');
 
-// north-ish arrow: door wall label
-text(W / 2, -760, 'Door wall', { size: 40, color: 'muted' });
-text(W / 2, L + T + 520, 'Sink wall', { size: 40, color: 'muted' });
+// ---- Scale bar + title block ----
+const SBX = -TL, SBY = L + T + 560;
+for (let i = 0; i < 4; i++) box(SBX + i * 250, SBY, SBX + (i + 1) * 250, SBY + 30, { fill: i % 2 ? '#fff' : INK, stroke: INK, 'stroke-width': 3 });
+for (const [i, s] of [[0, '0'], [2, '0.5'], [4, '1 m']]) text(SBX + i * 250, SBY + 70, s, { size: 28 });
+const TBX = 1050, TBY = L + T + 470, TBW = 1180, TBH = 300;
+box(TBX, TBY, TBX + TBW, TBY + TBH, { fill: '#fff', stroke: INK, 'stroke-width': 4 });
+line(TBX, TBY + 110, TBX + TBW, TBY + 110, 2.5, INK);
+line(TBX + TBW / 2, TBY + 110, TBX + TBW / 2, TBY + TBH, 2.5, INK);
+text(TBX + 30, TBY + 55, 'UTILITY ROOM — PROPOSED PLAN', { size: 40, weight: 700, anchor: 'start' });
+text(TBX + 30, TBY + 165, 'SCALE 1:20 (A4)', { size: 28, anchor: 'start' });
+text(TBX + 30, TBY + 225, 'ALL DIMENSIONS IN mm', { size: 28, anchor: 'start' });
+text(TBX + TBW / 2 + 30, TBY + 165, 'DO NOT SCALE — CHECK ON SITE', { size: 24, anchor: 'start' });
+text(TBX + TBW / 2 + 30, TBY + 225, 'sagarsmegadrive.online/utility', { size: 24, anchor: 'start', color: MID });
 
   // menu: "2D plan" shows the plan; any 3D view button goes back to 3D
   const overlay = document.getElementById('plan2d'), btn = document.getElementById('p2d');
