@@ -33,7 +33,20 @@
   #plan2d .legend span { display:inline-flex; align-items:center; gap:6px; }
   #plan2d .sw { width:16px; height:12px; border:1.5px solid; border-radius:2px; display:inline-block; }
   #plan2d .notes { margin-top:14px; font-size:13px; color:var(--muted); line-height:1.5; }
-  @media print { .ui, #c { display:none !important; } #plan2d { position:static; padding:0; background:#fff; } #plan2d[hidden] { display:block; } }
+  #plan2d .planbar { display:flex; justify-content:flex-end; margin-bottom:10px; }
+  #plan2d .planbar button { font:600 13px system-ui, sans-serif; border:0; border-radius:8px; padding:9px 14px; background:var(--accent); color:#fff; cursor:pointer; }
+  /* Print / Save as PDF: plan on page 1 at true 1:20 on A4, schedule on page 2 */
+  @page { size: A4 portrait; margin: 10mm; }
+  @media print {
+    html, body { height:auto !important; overflow:visible !important; background:#fff !important; }
+    .ui, #c, #scheme, #plan2d .planbar, body > div[style*="pointer-events"] { display:none !important; }
+    #plan2d, #plan2d[hidden] { display:block !important; position:static !important; padding:0 !important; background:#fff !important; overflow:visible !important; }
+    #plan2d .wrap { max-width:none; }
+    #plan2d .sheet { box-shadow:none; padding:0; border-radius:0; }
+    #plan2d svg { width:172.5mm !important; height:235mm !important; margin:0 auto; }
+    #plan2d .sched { break-before:page; font-size:11px; }
+    #plan2d .notes { color:#333; }
+  }
   #scheme { position:fixed; left:16px; bottom:16px; z-index:10; background:var(--panel); padding:10px 12px; border-radius:10px;
     box-shadow:0 2px 12px rgba(0,0,0,.15); max-width:min(420px, calc(100vw - 60px)); font-size:12px; line-height:1.45; }
   #scheme b { font-size:13px; } #scheme .sw { display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:4px; border:1px solid rgba(0,0,0,.2); }
@@ -51,6 +64,7 @@
 
 <div id="plan2d" hidden>
   <div class="wrap">
+    <div class="planbar"><button id="printPlan" type="button">Print / Save as PDF</button></div>
     <div class="sheet"><svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg></div>
     <table class="sched">
       <thead><tr><th>#</th><th>Item</th><th>Size (mm)</th><th>Notes</th></tr></thead>
@@ -271,6 +285,9 @@ text(TBX + 30, TBY + 225, 'ALL DIMENSIONS IN mm', { size: 28, anchor: 'start' })
 text(TBX + TBW / 2 + 30, TBY + 165, 'DO NOT SCALE — CHECK ON SITE', { size: 24, anchor: 'start' });
 text(TBX + TBW / 2 + 30, TBY + 225, 'sagarsmegadrive.online/utility', { size: 24, anchor: 'start', color: MID });
 
+  // print the 2D plan (browser print dialog: choose "Save as PDF")
+  document.getElementById('printPlan').addEventListener('click', () => window.print());
+  // printing from the 3D view still prints the plan
   // menu: "2D plan" shows the plan; any 3D view button goes back to 3D
   const overlay = document.getElementById('plan2d'), btn = document.getElementById('p2d');
   const viewBtns = ['v3d', 'vdoor', 'vplan', 'vsink'].map(id => document.getElementById(id));
