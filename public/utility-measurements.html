@@ -37,7 +37,7 @@
 <canvas id="c"></canvas>
 <div class="ui">
   <h1>Utility measurements</h1>
-  <p>2780 × 1380 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
+  <p id="hint">2780 × 1380 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
   <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Doors &amp; top off</button>
 </div>
 
@@ -287,7 +287,19 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 100);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
+controls.dampingFactor = 0.12;
 controls.maxPolarAngle = Math.PI * 0.495;
+controls.minDistance = 0.6;
+controls.maxDistance = 9;
+controls.screenSpacePanning = true;
+// touch: one finger orbits, two fingers pinch-zoom and drag to pan; slower so it's easier to control
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+if (matchMedia('(pointer: coarse)').matches) {
+  document.getElementById('hint').textContent = '2780 × 1380 mm · 1 finger: rotate · 2 fingers: pinch to zoom, drag to move';
+  controls.rotateSpeed = 0.55;
+  controls.zoomSpeed = 0.8;
+  controls.panSpeed = 0.7;
+}
 
 // ---- Lights ----
 scene.add(new THREE.HemisphereLight(0xffffff, 0xd8cfc0, 0.9));
@@ -713,7 +725,7 @@ const views = {
   v3d: { pos: [-2.7, 2.9, L / 2 + 1.1], tgt: [W / 2 + 0.2, 0.7, L / 2 + 0.15] },
   vdoor: { pos: [-2.3, 3.9, -1.9], tgt: [W / 2 + 0.1, 0.6, L / 2 + 0.2] },
   vplan: { pos: [W / 2, 10, L / 2 + 0.001], tgt: [W / 2, 0, L / 2] },
-  vsink: { pos: [0.55, 1.62, 0.35], tgt: [0.75, 0.95, L] },
+  vsink: { pos: [0.69, 1.95, -0.6], tgt: [0.7, 0.95, L - 0.25] },   // stood back by the door, looking at the sink
 };
 let anim = null, baseFov = 40;
 // on tall/narrow screens (phones) widen the vertical FOV so the room still fits across the width
@@ -726,7 +738,7 @@ function fitFov(base) {
 function go(name, instant) {
   const v = views[name];
   document.querySelectorAll('#v3d,#vdoor,#vplan,#vsink').forEach(b => b.classList.toggle('on', b.id === name));
-  baseFov = name === 'vplan' ? 22 : name === 'vsink' ? 60 : 40; camera.fov = fitFov(baseFov); camera.updateProjectionMatrix();
+  baseFov = name === 'vplan' ? 22 : name === 'vsink' ? 50 : 40; camera.fov = fitFov(baseFov); camera.updateProjectionMatrix();
   const to = { pos: new THREE.Vector3(...v.pos), tgt: new THREE.Vector3(...v.tgt) };
   if (instant) { camera.position.copy(to.pos); controls.target.copy(to.tgt); return; }
   anim = { from: { pos: camera.position.clone(), tgt: controls.target.clone() }, to, t: 0 };
