@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Utility Measurements</title>
+<style>
+  :root { --bg:#e9e6df; --panel:rgba(255,255,255,.88); --ink:#222; --muted:#666; --accent:#2f6f5e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#1b1c1e; --panel:rgba(30,32,35,.9); --ink:#eee; --muted:#aaa; --accent:#7cc4ad; } }
+  :root[data-theme="dark"] { --bg:#1b1c1e; --panel:rgba(30,32,35,.9); --ink:#eee; --muted:#aaa; --accent:#7cc4ad; }
+  html,body { margin:0; height:100%; background:var(--bg); font-family:system-ui,-apple-system,Segoe UI,sans-serif; color:var(--ink); overflow:hidden; }
+  #c { position:fixed; inset:0; }
+  .ui { position:fixed; left:16px; top:16px; background:var(--panel); padding:12px 14px; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.15); max-width:calc(100vw - 60px); }
+  .ui h1 { font-size:15px; margin:0 0 2px; }
+  .ui p { font-size:12px; margin:0 0 10px; color:var(--muted); }
+  .ui button { font:inherit; font-size:12px; border:1px solid var(--accent); background:transparent; color:var(--accent); border-radius:6px; padding:5px 9px; margin:0 4px 4px 0; cursor:pointer; }
+  .ui button.on { background:var(--accent); color:#fff; }
+  .ui { z-index:10; }
+  #plan2d { position:fixed; inset:0; overflow:auto; background:var(--bg); z-index:5; padding:150px 16px 40px; box-sizing:border-box;
+    --paper:#ffffff; --wall:#2b2d31; --unit:#dfe8e1; --unitLine:#5d7a68; --top:#e9d4b4; --topLine:#a67c45;
+    --appl:#f1f1ef; --glass:#bfe0f0; --dim:#2f6f5e; --wallunit:#5d7a68; --heater:#f3d9d2; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#8fb39d; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#8fb39d; --heater:#4a3430; } }
+  :root[data-theme="dark"] #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#8fb39d; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#8fb39d; --heater:#4a3430; }
+  #plan2d[hidden] { display:none; }
+  #plan2d .wrap { max-width:1000px; margin:0 auto; }
+  #plan2d .sheet { background:var(--paper); border-radius:10px; box-shadow:0 1px 8px rgba(0,0,0,.08); padding:8px; }
+  #plan2d svg { width:100%; height:auto; display:block; }
+  #plan2d .legend { display:flex; flex-wrap:wrap; gap:14px; margin-top:12px; font-size:12px; color:var(--muted); }
+  #plan2d .legend span { display:inline-flex; align-items:center; gap:6px; }
+  #plan2d .sw { width:16px; height:12px; border:1.5px solid; border-radius:2px; display:inline-block; }
+  #plan2d .notes { margin-top:14px; font-size:13px; color:var(--muted); line-height:1.5; }
+  @media print { .ui, #c { display:none !important; } #plan2d { position:static; padding:0; background:#fff; } #plan2d[hidden] { display:block; } }
+  .lbl { font-size:12px; font-weight:600; background:rgba(255,255,255,.9); color:#222; padding:2px 6px; border-radius:4px; white-space:nowrap; pointer-events:none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="ui">
+  <h1>Utility measurements</h1>
+  <p>2780 × 1380 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
+  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Doors &amp; top off</button>
+</div>
+
+<div id="plan2d" hidden>
+  <div class="wrap">
+    <div class="sheet"><svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <div class="legend">
+    <span><i class="sw" style="background:var(--wall);border-color:var(--wall)"></i>Wall</span>
+    <span><i class="sw" style="background:var(--top);border-color:var(--topLine)"></i>Worktop</span>
+    <span><i class="sw" style="background:var(--appl);border-color:var(--muted)"></i>Washer / dryer</span>
+    <span><i class="sw" style="background:transparent;border-color:var(--wallunit);border-style:dashed"></i>Wall units (above)</span>
+    <span><i class="sw" style="background:var(--glass);border-color:var(--muted)"></i>Window</span>
+    <span><i class="sw" style="background:var(--heater);border-color:var(--muted)"></i>Electric towel rail</span>
+  </div>
+    <p class="notes">Worktop height 910 mm. Window sills: long window 950 mm, sink window 1030 mm. Wall units 720 mm tall, bottom at 1450 mm. The long window wall is flush with its sill; the 190 mm pillar is the solid wall between the door wall and that window. Electric towel rail 400 × 800 mm, bottom at 250 mm, 90 mm off the wall. Door leaf removed, frame kept. Face plate beside the 600 door: 200 mm wide × 760 mm high (same height as the door), running from the door edge to the washer front line.</p>
+  </div>
+</div>
+<script>
+// ---- 2D plan (drawn to scale, mm) ----
+(() => {
+// ---- Geometry (mm). x: left wall (0) → right wall (1380). z: door wall (0) → sink wall (2780). ----
+const W = 1380, L = 2780, T = 180, TL = 320;
+const DOOR = { x0: 515, x1: 1275, arch: 35 };
+const PASS = { z0: 0, z1: 930 };
+const WIN_L = { z0: 190, z1: 2190, reveal: 190 };
+const WIN_B = { x0: 270, x1: 1370, recess: 40 };
+const RUN_R = { x0: 780, z0: 930, z1: 2190 };        // worktop front edge x=780 (600 deep)
+const RUN_B = { z0: 2190 };                          // sink worktop front edge (590 deep)
+const UNIT = { x0: 0, x1: 1200, z0: 2210, door: 600 };
+const SINK = { x0: 40, x1: 1040, z0: 2240, z1: 2730 }, BOWL = { x0: 90, x1: 510, z0: 2310, z1: 2660 };
+const APP = { x0: 800, x1: 1350 }, APP_W = (2210 - 930 - 18) / 2;
+const WU = { x0: W - 320, a: [930, 2130], b: [2130, 2430] };
+const HEAT = { x0: 40, x1: 440, z0: 75, z1: 105 };   // electric towel rail, 90 mm off the wall
+
+const svg = document.getElementById('plan');
+const NS = 'http://www.w3.org/2000/svg';
+const VB = { x: -1050, y: -950, w: 3350, h: 4400 };
+svg.setAttribute('viewBox', `${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
+function el(tag, attrs, parent = svg) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e); return e;
+}
+const css = v => `var(--${v})`;
+function rect(x0, z0, x1, z1, fill, stroke, extra = {}) {
+  return el('rect', { x: Math.min(x0, x1), y: Math.min(z0, z1), width: Math.abs(x1 - x0), height: Math.abs(z1 - z0),
+    fill: css(fill), stroke: stroke ? css(stroke) : 'none', 'stroke-width': 6, ...extra });
+}
+function text(x, y, s, opts = {}) {
+  const t = el('text', { x, y, 'font-size': opts.size || 52, fill: css(opts.color || 'ink'), 'text-anchor': opts.anchor || 'middle',
+    'dominant-baseline': 'middle', 'font-family': 'system-ui, sans-serif', 'font-weight': opts.weight || 500,
+    transform: opts.rot ? `rotate(${opts.rot} ${x} ${y})` : '' });
+  t.textContent = s; return t;
+}
+// dimension line between (x1,y1) and (x2,y2) (axis-aligned), drawn `off` mm to one side
+function dim(x1, y1, x2, y2, off, label, small) {
+  const g = el('g', {});
+  const horiz = y1 === y2;
+  const [ax, ay, bx, by] = horiz ? [x1, y1 + off, x2, y2 + off] : [x1 + off, y1, x2 + off, y2];
+  const s = { stroke: css('dim'), 'stroke-width': 4 };
+  el('line', { x1, y1, x2: ax, y2: ay, ...s, 'stroke-dasharray': '10 8', opacity: .6 }, g);
+  el('line', { x1: x2, y1: y2, x2: bx, y2: by, ...s, 'stroke-dasharray': '10 8', opacity: .6 }, g);
+  el('line', { x1: ax, y1: ay, x2: bx, y2: by, ...s }, g);
+  for (const [px, py] of [[ax, ay], [bx, by]])   // architectural ticks
+    el('line', { x1: px - 18, y1: py + 18, x2: px + 18, y2: py - 18, stroke: css('dim'), 'stroke-width': 6 }, g);
+  const mx = (ax + bx) / 2, my = (ay + by) / 2, size = small ? 40 : 48;
+  const pad = label.length * size * 0.29 + 12;
+  if (horiz) {
+    el('rect', { x: mx - pad, y: my - size * .62, width: pad * 2, height: size * 1.24, fill: css('paper'), rx: 8 }, g);
+    text(mx, my, label, { size, color: 'dim', weight: 600 }).remove(); g.appendChild(text(mx, my, label, { size, color: 'dim', weight: 600 }));
+  } else {
+    el('rect', { x: mx - size * .62, y: my - pad, width: size * 1.24, height: pad * 2, fill: css('paper'), rx: 8 }, g);
+    g.appendChild(text(mx, my, label, { size, color: 'dim', weight: 600, rot: -90 }));
+  }
+  return g;
+}
+
+// ---- Floor ----
+rect(0, 0, W, L, 'paper', null);
+rect(DOOR.x0, -T, DOOR.x1, 0, 'paper', null);
+rect(W, PASS.z0, W + T, PASS.z1, 'paper', null);
+
+// ---- Walls ----
+const wallG = el('g', {});
+const wr = (x0, z0, x1, z1) => rect(x0, z0, x1, z1, 'wall', null).remove() || wallG.appendChild(rect(x0, z0, x1, z1, 'wall', null));
+// left wall: solid at pillar + beside the sink unit, window reveal in between
+wr(-TL, -T, 0, WIN_L.z0);
+wr(-TL, WIN_L.z1, 0, L + T);
+wr(-TL, WIN_L.z0, -WIN_L.reveal - 70, WIN_L.z1);       // outer skin behind the frame
+// door wall with opening
+wr(-TL, -T, DOOR.x0, 0);
+wr(DOOR.x1, -T, W + T, 0);
+wr(W, -550, W + T, -T);                               // wall stub continuing north
+// right wall from end of passage
+wr(W, PASS.z1, W + T, L + T);
+// sink wall with recessed window
+wr(-TL, L, WIN_B.x0, L + T);
+wr(WIN_B.x1, L, W + T, L + T);
+wr(WIN_B.x0, L + WIN_B.recess + 70, WIN_B.x1, L + T);
+
+// ---- Windows (frame + glass line) and sills ----
+rect(-WIN_L.reveal, WIN_L.z0, 0, WIN_L.z1, 'paper', 'muted', { 'stroke-width': 3 });                    // 190 deep sill
+rect(-WIN_L.reveal - 70, WIN_L.z0, -WIN_L.reveal, WIN_L.z1, 'glass', 'muted', { 'stroke-width': 4 });
+rect(WIN_B.x0, L, WIN_B.x1, L + WIN_B.recess, 'paper', 'muted', { 'stroke-width': 3 });
+rect(WIN_B.x0, L + WIN_B.recess, WIN_B.x1, L + WIN_B.recess + 70, 'glass', 'muted', { 'stroke-width': 4 });
+
+// ---- Door frame (no leaf) ----
+for (const x of [DOOR.x0, DOOR.x1]) rect(x - DOOR.arch, -T, x + DOOR.arch, 12, 'paper', 'muted', { 'stroke-width': 4 });
+
+// ---- Worktops ----
+rect(RUN_R.x0, RUN_R.z0, W, RUN_B.z0, 'top', 'topLine');
+rect(0, RUN_B.z0, W, L, 'top', 'topLine');
+// 1200 base unit outline below (dotted) + door + gap
+el('line', { x1: UNIT.x1, y1: UNIT.z0, x2: UNIT.x1, y2: L, stroke: css('unitLine'), 'stroke-width': 5, 'stroke-dasharray': '6 10' });
+el('line', { x1: UNIT.door, y1: UNIT.z0 - 20, x2: UNIT.door, y2: UNIT.z0 + 60, stroke: css('unitLine'), 'stroke-width': 6 });
+rect(UNIT.x1, UNIT.z0 + 30, W - 8, L - 8, 'paper', null, { opacity: .55 });
+text((UNIT.x1 + W) / 2, (UNIT.z0 + L) / 2, 'gap', { size: 34, color: 'muted', rot: -90 });
+
+// face plate between the 600 door and the washer-run front line
+rect(UNIT.door, UNIT.z0 - 20, APP.x0, UNIT.z0, 'unitLine', null);
+
+// ---- Sink ----
+rect(SINK.x0, SINK.z0, SINK.x1, SINK.z1, 'appl', 'muted', { rx: 18 });
+rect(BOWL.x0, BOWL.z0, BOWL.x1, BOWL.z1, 'paper', 'muted', { rx: 30 });
+el('circle', { cx: (BOWL.x0 + BOWL.x1) / 2, cy: (BOWL.z0 + BOWL.z1) / 2, r: 30, fill: 'none', stroke: css('muted'), 'stroke-width': 5 });
+for (let x = BOWL.x1 + 60; x < SINK.x1 - 40; x += 45)
+  el('line', { x1: x, y1: BOWL.z0 + 20, x2: x, y2: BOWL.z1 - 20, stroke: css('muted'), 'stroke-width': 3, opacity: .7 });
+el('circle', { cx: (BOWL.x0 + BOWL.x1) / 2, cy: (BOWL.z1 + SINK.z1) / 2 + 10, r: 22, fill: css('muted') });
+
+// ---- Washer + dryer (under the worktop) ----
+const dz0 = RUN_R.z0 + 18;
+for (const [z0, name] of [[dz0, 'Dryer'], [dz0 + APP_W, 'Washer']]) {
+  rect(APP.x0, z0 + 6, APP.x1, z0 + APP_W - 6, 'appl', 'muted', { 'stroke-dasharray': '14 8', 'stroke-width': 4 });
+  text(APP.x0 + 120, z0 + APP_W / 2, name, { size: 44, color: 'muted', rot: -90 });
+}
+
+// ---- Wall units above (dashed) ----
+for (const [z0, z1, doors] of [[...WU.a, 2], [...WU.b, 1]]) {
+  rect(WU.x0, z0, W, z1, 'paper', 'wallunit', { fill: 'none', 'stroke-dasharray': '24 14', 'stroke-width': 6 });
+  if (doors === 2) el('line', { x1: WU.x0, y1: (z0 + z1) / 2, x2: WU.x0 + 60, y2: (z0 + z1) / 2, stroke: css('wallunit'), 'stroke-width': 5 });
+}
+
+// ---- Electric towel rail (uprights + bars, on brackets) ----
+rect(HEAT.x0, HEAT.z0, HEAT.x1, HEAT.z1, 'heater', 'muted', { 'stroke-width': 4, rx: 12 });
+for (const x of [HEAT.x0 + 12, HEAT.x1 - 12]) el('line', { x1: x, y1: 0, x2: x, y2: HEAT.z0, stroke: css('muted'), 'stroke-width': 6 });
+
+// ---- Room label ----
+text(330, 1300, 'Utility', { size: 80, weight: 700 });
+text(330, 1390, '2780 × 1380', { size: 50, color: 'muted' });
+
+// ---- Dimensions ----
+// overall
+dim(0, L + T, W, L + T, 330, '1380');
+dim(-TL, 0, -TL, L, -340, '2780');
+// sink wall: 270 + 1100 window (+10 to the right wall)
+dim(0, L + T, WIN_B.x0, L + T, 170, '270', true);
+dim(WIN_B.x0, L + T, WIN_B.x1, L + T, 170, 'Window 1100');
+// left wall: pillar, long window, wall beside sink unit
+dim(-TL, 0, -TL, WIN_L.z0, -160, '190', true);
+dim(-TL, WIN_L.z0, -TL, WIN_L.z1, -160, 'Window 2000');
+dim(-TL, WIN_L.z1, -TL, L, -160, '590', true);
+dim(-WIN_L.reveal, 1150, 0, 1150, 0, 'Sill 190', true);
+// door wall
+dim(0, -T, DOOR.x0 - DOOR.arch, -T, -170, '480', true);
+dim(DOOR.x0, -T, DOOR.x1, -T, -170, 'Opening 760');
+dim(HEAT.x0, HEAT.z1, HEAT.x1, HEAT.z1, 70, 'Towel rail 400', true);
+// right side: passage, worktop 1850, wall units
+dim(W + T, PASS.z0, W + T, PASS.z1, 180, 'Opening 930');
+dim(W + T, RUN_R.z0, W + T, L, 180, 'Worktop 1850');
+dim(W + T, WU.a[0], W + T, WU.a[1], 400, 'Wall unit 1200', true);
+dim(W + T, WU.b[0], W + T, WU.b[1], 400, '300', true);
+// worktop depths
+dim(RUN_R.x0, RUN_R.z0, W, RUN_R.z0, -70, '600', true);
+dim(1110, RUN_B.z0, 1110, L, 0, '590', true);
+// base unit + gap
+dim(0, RUN_B.z0, UNIT.door, RUN_B.z0, -100, 'Door 600', true);
+dim(UNIT.door, RUN_B.z0, APP.x0, RUN_B.z0, -100, 'Face plate 200', true);
+dim(0, RUN_B.z0, UNIT.x1, RUN_B.z0, -200, 'Unit 1200', true);
+dim(UNIT.x1, RUN_B.z0, W, RUN_B.z0, -200, '180', true);
+dim(0, RUN_B.z0, W, RUN_B.z0, -300, 'Sink counter front 1380');
+// walkway
+dim(0, 1700, RUN_R.x0, 1700, 0, 'Walkway 780');
+
+// north-ish arrow: door wall label
+text(W / 2, -760, 'Door wall', { size: 40, color: 'muted' });
+text(W / 2, L + T + 520, 'Sink wall', { size: 40, color: 'muted' });
+
+  // menu: "2D plan" shows the plan; any 3D view button goes back to 3D
+  const overlay = document.getElementById('plan2d'), btn = document.getElementById('p2d');
+  const viewBtns = ['v3d', 'vdoor', 'vplan', 'vsink'].map(id => document.getElementById(id));
+  btn.addEventListener('click', () => {
+    overlay.hidden = false; btn.classList.add('on');
+    viewBtns.forEach(b => b.classList.remove('on'));
+  });
+  viewBtns.forEach(b => b.addEventListener('click', () => { overlay.hidden = true; btn.classList.remove('on'); }));
+  if (location.hash === '#plan2d') btn.click();
+})();
+</script>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+// ---- Dimensions (metres), from the floor plan + hand-measured sketch ----
+// x = across the room (left wall → right wall), z = along the room (door wall → sink wall)
+const W = 1.38, L = 2.78, H = 2.4, T = 0.18;     // interior width/length, ceiling height, wall thickness
+const TL = 0.32;                                  // left wall is thicker: long window sits in a 19 cm deep reveal
+const DOOR = { x0: 0.48 + 0.035, x1: 0.48 + 0.035 + 0.76, h: 2.04 };  // door in top wall, opens outward; frame starts 480 mm from the window wall
+const PASS = { z0: 0, z1: 0.93, h: 2.04 };        // open passage in right wall, top end
+const PIER = { len: 0.59 };                             // long window starts at the end of the sink-wall unit
+const XL = 0;                                     // left wall face is flush with the window sill (no step)
+const WIN_L = { z1: 2.78 - PIER.len, len: 2.24, sill: 0.95, head: 2.10, reveal: 0.19 }; // long window starts at the end of the kitchen unit
+const PILLAR = { x: 0, z: 0.19 };                 // 190 mm pillar at the door end of the window, face flush with the sill
+WIN_L.z0 = PILLAR.z;                              // window runs from the pillar to the end of the sink unit
+const WIN_B = { x0: 0.27, x1: 1.37, sill: 1.03, head: 2.12, recess: 0.04 }; // 110 cm single pane, recessed 4 cm
+const WT = 0.91;                                  // worktop height
+const RUN_R = { x0: 1.38 - 0.60 + 0.02, z0: 2.78 - 1.85 }; // right-hand worktop: 1850 long from the sink wall, 600 deep (incl. 20 overhang)
+const RUN_B = { z0: 2.78 - 0.59 + 0.02 };          // worktop along sink wall: 590 deep (incl. 20 overhang)
+const SINK = { x0: 0.04, x1: 1.04, z0: 2.24, z1: 2.73 };   // sink at the right-hand end, drainer to the left
+const BOWL = { x0: 0.09, x1: 0.51, z0: 2.31, z1: 2.66, d: 0.18 };
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+const labelR = new CSS2DRenderer();
+labelR.domElement.style.cssText = 'position:fixed;inset:0;pointer-events:none';
+document.body.appendChild(labelR.domElement);
+
+const scene = new THREE.Scene();
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+scene.background = new THREE.Color(0xdde6ec);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 100);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.495;
+
+// ---- Lights ----
+scene.add(new THREE.HemisphereLight(0xffffff, 0xd8cfc0, 0.9));
+const sun = new THREE.DirectionalLight(0xfff3e0, 2.2);
+sun.position.set(-3, 5, 4);
+sun.target.position.set(W / 2, 0, L / 2);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 15 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+scene.add(sun, sun.target);
+const ceil = new THREE.PointLight(0xffffff, 1.2, 6, 1.5);
+ceil.position.set(W / 2, H - 0.1, L / 2);
+scene.add(ceil);
+
+// ---- Textures ----
+function tileTex(tile, grout, px, n, gw) {
+  const c = document.createElement('canvas'); c.width = c.height = px * n;
+  const g = c.getContext('2d');
+  g.fillStyle = grout; g.fillRect(0, 0, c.width, c.height);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const v = (Math.random() * 10 - 5) | 0;
+    g.fillStyle = shade(tile, v);
+    g.fillRect(i * px + gw, j * px + gw, px - gw * 2, px - gw * 2);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+function shade(hex, d) {
+  const n = parseInt(hex.slice(1), 16);
+  const f = x => Math.max(0, Math.min(255, x + d));
+  return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
+}
+function woodTex() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = '#b98a5a'; g.fillRect(0, 0, 512, 128);
+  for (let i = 0; i < 90; i++) {
+    g.strokeStyle = `rgba(${90 + Math.random() * 40},${55 + Math.random() * 25},30,${0.08 + Math.random() * 0.15})`;
+    g.lineWidth = 1 + Math.random() * 2;
+    const y = Math.random() * 128; g.beginPath(); g.moveTo(0, y);
+    for (let x = 0; x <= 512; x += 32) g.lineTo(x, y + Math.sin(x / 60 + i) * 3);
+    g.stroke();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+const floorTex = tileTex('#cfc8bc', '#a59d90', 128, 4, 2); floorTex.repeat.set(W / 0.6 / 4, L / 0.6 / 4);
+const splashTex = tileTex('#f4f4f0', '#cfcfc8', 64, 8, 2);
+
+// ---- Materials ----
+const M = {
+  wall: new THREE.MeshStandardMaterial({ color: 0xf3efe6, roughness: 0.95 }),
+  wallTop: new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 }),
+  floor: new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.6 }),
+  outside: new THREE.MeshStandardMaterial({ color: 0xdedad2, roughness: 1 }),
+  cab: new THREE.MeshStandardMaterial({ color: 0x8fa596, roughness: 0.55 }),
+  cabEdge: new THREE.MeshStandardMaterial({ color: 0x80968a, roughness: 0.6 }),
+  carc: new THREE.MeshStandardMaterial({ color: 0xf1f0ea, roughness: 0.6 }),
+  plinth: new THREE.MeshStandardMaterial({ color: 0x5f6d64, roughness: 0.7 }),
+  wood: new THREE.MeshStandardMaterial({ map: woodTex(), roughness: 0.45 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0xdfe2e5, metalness: 0.55, roughness: 0.3 }),
+  steelIn: new THREE.MeshStandardMaterial({ color: 0xc9cdd1, metalness: 0.55, roughness: 0.35, side: THREE.BackSide }),
+  chrome: new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.08 }),
+  pvc: new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.4 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0xcfe8f5, transparent: true, opacity: 0.22, roughness: 0.05, metalness: 0 }),
+  splash: new THREE.MeshStandardMaterial({ map: splashTex, roughness: 0.25 }),
+  door: new THREE.MeshStandardMaterial({ color: 0xf7f5f0, roughness: 0.5 }),
+  appl: new THREE.MeshStandardMaterial({ color: 0xf6f6f4, roughness: 0.3 }),
+  applPanel: new THREE.MeshStandardMaterial({ color: 0xdedfe0, roughness: 0.35 }),
+  display: new THREE.MeshStandardMaterial({ color: 0x1d2a33, roughness: 0.2, emissive: 0x0a2a3a }),
+  applRing: new THREE.MeshStandardMaterial({ color: 0xb8bcc0, metalness: 0.7, roughness: 0.25 }),
+  applRing2: new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.3 }),
+  applGlass: new THREE.MeshStandardMaterial({ color: 0x3c4a55, metalness: 0.3, roughness: 0.08, transparent: true, opacity: 0.85 }),
+  applGlass2: new THREE.MeshStandardMaterial({ color: 0x8a949b, metalness: 0.2, roughness: 0.1, transparent: true, opacity: 0.8 }),
+  dim: new THREE.LineBasicMaterial({ color: 0x2f6f5e }),
+};
+
+// geometry is added to ROOT by default; switched to the removable groups below
+let ROOT = scene;
+const doorsGroup = new THREE.Group(), topGroup = new THREE.Group();
+scene.add(doorsGroup, topGroup);
+function box(w, h, d, mat, x, y, z, parent = ROOT, shadow = true) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z);
+  m.castShadow = shadow; m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+// box from min/max corners
+function bb(x0, y0, z0, x1, y1, z1, mat, parent = ROOT, shadow = true) {
+  return box(x1 - x0, y1 - y0, z1 - z0, mat, (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, parent, shadow);
+}
+
+// ---- Floor ----
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, L), M.floor);
+floor.rotation.x = -Math.PI / 2; floor.position.set(W / 2, 0, L / 2); floor.receiveShadow = true;
+scene.add(floor);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), M.outside);
+ground.rotation.x = -Math.PI / 2; ground.position.set(W / 2, -0.002, L / 2); ground.receiveShadow = true;
+scene.add(ground);
+// floor continues through the doorway and the passage
+bb(DOOR.x0, -0.001, -T, DOOR.x1, 0.0005, 0, M.floor, scene, false);
+bb(W, -0.001, PASS.z0, W + T, 0.0005, PASS.z1, M.floor, scene, false);
+
+// ---- Walls (each in its own group so the near ones can be cut away) ----
+const walls = [];
+function wall(normal, center) {
+  const g = new THREE.Group(); scene.add(g);
+  // a dark footprint that stays visible when the wall is cut away
+  const foot = new THREE.Group(); scene.add(foot);
+  walls.push({ g, foot, normal: new THREE.Vector3(...normal), center: new THREE.Vector3(...center) });
+  return { g, foot };
+}
+function wallPiece(w, x0, y0, z0, x1, y1, z1) {
+  bb(x0, y0, z0, x1, y1, z1, M.wall, w.g);
+  if (y0 === 0) bb(x0, 0, z0, x1, 0.03, z1, M.wallTop, w.foot, false);
+}
+
+// Left wall (x < 0) with window
+const wl = wall([-1, 0, 0], [-T / 2, H / 2, L / 2]);
+wallPiece(wl, XL - TL, 0, -T, XL + PILLAR.x, H, WIN_L.z0);   // includes the corner pillar
+wallPiece(wl, XL - TL, 0, WIN_L.z1, XL, H, L + T);
+wallPiece(wl, XL - TL, 0, WIN_L.z0, XL, WIN_L.sill, WIN_L.z1);
+wallPiece(wl, XL - TL, WIN_L.head, WIN_L.z0, XL, H, WIN_L.z1);
+
+// Sink wall (z > L) with window
+const wb = wall([0, 0, 1], [W / 2, H / 2, L + T / 2]);
+wallPiece(wb, XL - TL, 0, L, WIN_B.x0, H, L + T);
+wallPiece(wb, WIN_B.x1, 0, L, W + T, H, L + T);
+wallPiece(wb, WIN_B.x0, 0, L, WIN_B.x1, WIN_B.sill, L + T);
+wallPiece(wb, WIN_B.x0, WIN_B.head, L, WIN_B.x1, H, L + T);
+
+// Right wall (x > W) with open passage at the top end
+const wr = wall([1, 0, 0], [W + T / 2, H / 2, L / 2]);
+wallPiece(wr, W, 0, PASS.z1, W + T, H, L + T);
+wallPiece(wr, W, PASS.h, PASS.z0, W + T, H, PASS.z1);
+
+// Top wall (z < 0) with door
+const wt = wall([0, 0, -1], [W / 2, H / 2, -T / 2]);
+wallPiece(wt, XL - TL, 0, -T, DOOR.x0, H, 0);
+wallPiece(wt, DOOR.x1, 0, -T, W + T, H, 0);
+wallPiece(wt, DOOR.x0, DOOR.h, -T, DOOR.x1, H, 0);
+// wall stub continuing north from the top-right corner (as drawn on the plan)
+wallPiece(wt, W, 0, -0.55, W + T, H, -T);
+
+// cooker switch / socket on the wall beside the door (from photo)
+bb(0.14, 1.1, 0, 0.32, 1.19, 0.012, M.pvc, wt.g, false);
+bb(0.25, 1.13, 0.012, 0.28, 1.17, 0.018, new THREE.MeshStandardMaterial({ color: 0xd8262c }), wt.g, false);
+
+// ---- Windows ----
+function windowFrame(parent, axis, a0, a1, sill, head, inner, outer, panes) {
+  // axis 'z': window in a wall of constant x; 'x': wall of constant z
+  const fw = 0.06, mid = (inner + outer) / 2, depth = 0.07;
+  const piece = (u0, v0, u1, v1, mat, d0 = mid - depth / 2, d1 = mid + depth / 2) =>
+    axis === 'z' ? bb(Math.min(d0, d1), v0, u0, Math.max(d0, d1), v1, u1, mat, parent)
+                 : bb(u0, v0, Math.min(d0, d1), u1, v1, Math.max(d0, d1), mat, parent);
+  piece(a0, sill, a1, sill + fw, M.pvc);
+  piece(a0, head - fw, a1, head, M.pvc);
+  piece(a0, sill, a0 + fw, head, M.pvc);
+  piece(a1 - fw, sill, a1, head, M.pvc);
+  const nPanes = panes || ((a1 - a0) > 1.2 ? 3 : 2);
+  for (let i = 1; i < nPanes; i++) {
+    const u = a0 + (a1 - a0) * i / nPanes;
+    piece(u - fw / 2, sill, u + fw / 2, head, M.pvc);
+  }
+  const g = piece(a0 + fw, sill + fw, a1 - fw, head - fw, M.glass, mid - 0.005, mid + 0.005);
+  g.castShadow = false;
+  // internal sill board
+  const s = axis === 'z' ? bb(Math.min(inner, inner + Math.sign(inner - outer) * 0.04), sill - 0.025, a0 - 0.03, Math.max(inner, inner + Math.sign(inner - outer) * 0.04), sill, a1 + 0.03, M.pvc, parent)
+                         : bb(a0 - 0.03, sill - 0.025, Math.min(inner, inner + Math.sign(inner - outer) * 0.04), a1 + 0.03, sill, Math.max(inner, inner + Math.sign(inner - outer) * 0.04), M.pvc, parent);
+  // reveals
+  return s;
+}
+windowFrame(wl.g, 'z', WIN_L.z0, WIN_L.z1, WIN_L.sill, WIN_L.head, XL - WIN_L.reveal, XL - WIN_L.reveal - 0.07);
+bb(XL - WIN_L.reveal, WIN_L.sill - 0.025, WIN_L.z0, XL, WIN_L.sill, WIN_L.z1, M.pvc, wl.g);   // 19 cm deep sill
+windowFrame(wb.g, 'x', WIN_B.x0, WIN_B.x1, WIN_B.sill, WIN_B.head, L + WIN_B.recess, L + WIN_B.recess + 0.07, 1);
+bb(WIN_B.x0, WIN_B.sill - 0.025, L - 0.02, WIN_B.x1, WIN_B.sill, L + WIN_B.recess, M.pvc, wb.g);
+
+
+// ---- Door (hinged on the right jamb, handle on the left as in the photo, swung outward) ----
+const doorPivot = new THREE.Group();
+doorPivot.position.set(DOOR.x1 - 0.02, 0, -T + 0.01);
+doorPivot.rotation.y = THREE.MathUtils.degToRad(180 - 78);
+doorPivot.visible = false;   // door leaf removed; frame and architrave stay
+scene.add(doorPivot);
+const leafW = DOOR.x1 - DOOR.x0 - 0.04;
+const leaf = box(leafW, DOOR.h - 0.02, 0.04, M.door, leafW / 2, (DOOR.h - 0.02) / 2, -0.02, doorPivot);
+for (const [y0, y1] of [[0.25, 0.95], [1.1, 1.85]]) {
+  box(leafW - 0.2, y1 - y0, 0.006, M.pvc, leafW / 2, (y0 + y1) / 2, 0.003, doorPivot);
+  box(leafW - 0.2, y1 - y0, 0.006, M.pvc, leafW / 2, (y0 + y1) / 2, -0.043, doorPivot);
+}
+const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.12), M.chrome);
+knob.rotation.x = Math.PI / 2; knob.position.set(leafW - 0.07, 1.0, -0.02); doorPivot.add(knob);
+// door linings / architrave
+for (const x of [DOOR.x0, DOOR.x1]) bb(x - 0.035, 0, -0.012, x + 0.035, DOOR.h + 0.035, 0.012, M.pvc);
+bb(DOOR.x0 - 0.035, DOOR.h, -0.012, DOOR.x1 + 0.035, DOOR.h + 0.07, 0.012, M.pvc);
+
+// ---- Base units ----
+const TOP0 = WT - 0.04, OH = 0.02; // worktop: 40mm thick, 20mm overhang
+const CAB_H = WT - 0.04, PL = 0.1, REC = 0.06;     // carcass top, plinth height, plinth recess
+function shakerDoor(x0, z0, x1, z1, faceDir) {
+  // faceDir: 'x-' (faces into the room along -x) or 'z-' (faces along -z)
+  const t = 0.02, y0 = PL + 0.005, y1 = CAB_H - 0.005;
+  const along = faceDir === 'x-' ? [z0, z1] : [x0, x1];
+  const front = faceDir === 'x-' ? x0 : z0;
+  const g = new THREE.Group(); ROOT.add(g);
+  const p = (a0, b0, a1, b1, d0, d1, mat) => faceDir === 'x-' ? bb(d0, b0, a0, d1, b1, a1, mat, g) : bb(a0, b0, d0, a1, b1, d1, mat, g);
+  p(along[0] + 0.002, y0, along[1] - 0.002, y1, front - t, front, M.cab);
+  const r = 0.06; // shaker frame
+  p(along[0] + r, y0 + r, along[1] - r, y1 - r, front - t - 0.002, front - t + 0.008, M.cabEdge);
+  // bar handle near the top, vertical
+  const hx = faceDir === 'x-' ? null : null;
+  const hp = along[1] - along[0] > 0 ? along : along;
+  return { g, p, along, front, t, y1 };
+}
+function handle(pos, vertical, axis) {
+  const g = new THREE.Group();
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.14), M.chrome);
+  if (!vertical) bar.rotation.z = Math.PI / 2;
+  g.add(bar);
+  for (const s of [-0.055, 0.055]) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.03), M.chrome);
+    leg.rotation[axis === 'x' ? 'z' : 'x'] = Math.PI / 2;
+    if (vertical) leg.position.y = s; else leg.position.x = s;
+    if (axis === 'x') leg.position.x += 0.015; else leg.position.z += 0.015;
+    g.add(leg);
+  }
+  if (axis === 'x') { bar.position.x = -0.0; g.position.set(pos[0] - 0.03, pos[1], pos[2]); }
+  else g.position.set(pos[0], pos[1], pos[2] - 0.03);
+  ROOT.add(g);
+}
+
+// Right-hand run: washing machine + tumble dryer side by side under the worktop
+// end panel at the door end, flush with the end of the wall
+bb(RUN_R.x0 - OH, 0, RUN_R.z0, W, WT - 0.04, RUN_R.z0 + 0.018, M.cab);
+const APP_W = (RUN_B.z0 - RUN_R.z0 - 0.018) / 2;   // ~0.6 m each
+function appliance(z0, z1, dryer) {
+  const x0 = RUN_R.x0 - 0.0, h = 0.85, front = x0;
+  bb(x0, 0.01, z0 + 0.004, W - 0.03, h, z1 - 0.004, M.appl);
+  // control panel strip + dial + display
+  bb(front - 0.004, h - 0.1, z0 + 0.01, front, h - 0.01, z1 - 0.01, M.applPanel, scene, false);
+  const dial = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.02, 32), M.chrome);
+  dial.rotation.z = Math.PI / 2; dial.position.set(front - 0.012, h - 0.055, (z0 + z1) / 2 + 0.14); scene.add(dial);
+  bb(front - 0.006, h - 0.075, (z0 + z1) / 2 - 0.08, front - 0.003, h - 0.035, (z0 + z1) / 2 + 0.04, M.display, scene, false);
+  // drawer (washer) / filter flap
+  if (!dryer) bb(front - 0.006, h - 0.095, z0 + 0.02, front - 0.003, h - 0.02, z0 + 0.17, M.appl, scene, false);
+  // round porthole door
+  const cy = 0.45, cz = (z0 + z1) / 2, R = 0.2;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(R, 0.028, 16, 48), dryer ? M.applRing2 : M.applRing);
+  ring.rotation.y = Math.PI / 2; ring.position.set(front - 0.03, cy, cz); ring.castShadow = true; scene.add(ring);
+  const glass = new THREE.Mesh(new THREE.CircleGeometry(R - 0.01, 48), dryer ? M.applGlass2 : M.applGlass);
+  glass.rotation.y = -Math.PI / 2; glass.position.set(front - 0.025, cy, cz); scene.add(glass);
+  const latch = box(0.02, 0.09, 0.03, M.applPanel, front - 0.04, cy, cz - R - 0.005);
+}
+appliance(RUN_B.z0 - APP_W, RUN_B.z0, false);              // washer, nearest the sink
+appliance(RUN_R.z0 + 0.018, RUN_R.z0 + 0.018 + APP_W, true); // dryer, nearest the door
+
+// hollow carcass: open face is the front ('-z' = front at z0, '-x' = front at x0)
+function carcass(x0, y0, z0, x1, y1, z1, open, shelves, withTop) {
+  const t = 0.018;
+  if (open === '-z') {
+    bb(x0, y0, z0, x0 + t, y1, z1, M.cabEdge); bb(x1 - t, y0, z0, x1, y1, z1, M.cabEdge);   // sides
+    bb(x0 + t, y0, z1 - t, x1 - t, y1, z1, M.carc);                                         // back
+    bb(x0 + t, y0, z0, x1 - t, y0 + t, z1 - t, M.carc);                                     // bottom
+    if (withTop) bb(x0 + t, y1 - t, z0, x1 - t, y1, z1 - t, M.carc);
+    else { bb(x0 + t, y1 - t, z0, x1 - t, y1, z0 + 0.08, M.carc); bb(x0 + t, y1 - t, z1 - t - 0.08, x1 - t, y1, z1 - t, M.carc); } // rails
+    for (let i = 1; i <= shelves; i++) { const y = y0 + (y1 - y0) * i / (shelves + 1); bb(x0 + t, y - t / 2, z0 + 0.02, x1 - t, y + t / 2, z1 - t, M.carc); }
+  } else {
+    bb(x0, y0, z0, x1, y1, z0 + t, M.cabEdge); bb(x0, y0, z1 - t, x1, y1, z1, M.cabEdge);   // sides
+    bb(x1 - t, y0, z0 + t, x1, y1, z1 - t, M.carc);                                         // back
+    bb(x0, y0, z0 + t, x1 - t, y0 + t, z1 - t, M.carc);                                     // bottom
+    if (withTop) bb(x0, y1 - t, z0 + t, x1 - t, y1, z1 - t, M.carc);
+    for (let i = 1; i <= shelves; i++) { const y = y0 + (y1 - y0) * i / (shelves + 1); bb(x0 + 0.02, y - t / 2, z0 + t, x1 - t, y + t / 2, z1 - t, M.carc); }
+  }
+}
+
+// Sink-wall run: one 1200 mm blind-corner unit from the left-wall end (600 door + blind section behind
+// the washer), leaving a gap between it and the right-hand wall
+const BU_W = 1.2;
+carcass(XL, PL, RUN_B.z0 + 0.02, XL + BU_W, CAB_H, L, '-z', 0, false);
+bb(XL, 0, RUN_B.z0 + REC, RUN_R.x0 + REC, PL, L, M.plinth);
+// 600 mm sink base unit at the left-wall end (under the bowl), handle on the corner side
+const SB = XL + 0.6;   // 600 mm door, starting flush with the window wall
+ROOT = doorsGroup;
+shakerDoor(XL, RUN_B.z0 + 0.02, SB, RUN_B.z0 + 0.02, 'z-');
+handle([SB - 0.05, CAB_H - 0.12, RUN_B.z0 + 0.0], true, 'z');
+// fixed filler panel in front of the blind corner
+// plain face plate from the door to the washer-run front line: 200 W x 760 H
+bb(SB + 0.002, PL + 0.005, RUN_B.z0, RUN_R.x0, CAB_H - 0.005, RUN_B.z0 + 0.02, M.cab);
+ROOT = scene;
+
+// ---- Wall units on the right-hand wall (from the door end): 1200 two-door, then 300 single-door ----
+const WU = { y0: 1.45, h: 0.72, d: 0.32 };
+function wallUnit(z0, w, doors) {
+  const z1 = z0 + w, x0 = W - WU.d, y1 = WU.y0 + WU.h, t = 0.02, r = 0.06;
+  carcass(x0, WU.y0, z0, W, y1, z1, '-x', 1, true);
+  ROOT = doorsGroup;
+  for (let i = 0; i < doors; i++) {
+    const a = z0 + w * i / doors + 0.002, b = z0 + w * (i + 1) / doors - 0.002;
+    bb(x0 - t, WU.y0 + 0.002, a, x0, y1 - 0.002, b, M.cab);
+    bb(x0 - t - 0.002, WU.y0 + r, a + r, x0 - t + 0.008, y1 - r, b - r, M.cabEdge);
+    // handle at the bottom, on the meeting edge (single door: on the side next to the 1200 unit)
+    const hz = doors === 2 ? (i === 0 ? b - 0.05 : a + 0.05) : a + 0.05;
+    handle([x0 - t, WU.y0 + 0.12, hz], true, 'x');
+  }
+  ROOT = scene;
+}
+wallUnit(PASS.z1, 1.2, 2);
+wallUnit(PASS.z1 + 1.2, 0.3, 1);
+
+// ---- Electric towel rail on the door wall, between the window wall and the door frame ----
+{
+  const TR = { x0: 0.04, x1: 0.44, y0: 0.25, y1: 1.05, off: 0.09 };  // 400 W x 800 H, ladder style
+  const z = TR.off, rr = 0.0125;
+  for (const x of [TR.x0 + rr, TR.x1 - rr]) {                        // uprights
+    const up = new THREE.Mesh(new THREE.CylinderGeometry(rr, rr, TR.y1 - TR.y0, 20), M.chrome);
+    up.position.set(x, (TR.y0 + TR.y1) / 2, z); up.castShadow = true; scene.add(up);
+    for (const y of [TR.y0 + 0.08, TR.y1 - 0.08]) {                 // wall brackets
+      const br = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, z, 12), M.chrome);
+      br.rotation.x = Math.PI / 2; br.position.set(x, y, z / 2); scene.add(br);
+    }
+  }
+  for (let y = TR.y0 + 0.03; y <= TR.y1 - 0.02; y += 0.055) {       // horizontal bars
+    const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.0095, 0.0095, TR.x1 - TR.x0 - 2 * rr, 16), M.chrome);
+    bar.rotation.z = Math.PI / 2; bar.position.set((TR.x0 + TR.x1) / 2, y, z); bar.castShadow = true; scene.add(bar);
+  }
+  // electric element head at the bottom of the right upright, cable into the wall
+  const head = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.07, 20), M.pvc);
+  head.position.set(TR.x1 - rr, TR.y0 - 0.035, z); scene.add(head);
+  bb(TR.x1 - rr - 0.003, TR.y0 - 0.08, 0, TR.x1 - rr + 0.003, TR.y0 - 0.074, z, M.pvc, scene, false);
+}
+
+// ---- Worktop (oak) with sink cut-out ----
+ROOT = topGroup;
+// right run
+bb(RUN_R.x0 - OH, TOP0, RUN_R.z0, W, WT, RUN_B.z0 - OH, M.wood);
+// sink-wall run, built around the sink opening
+const bz0 = RUN_B.z0 - OH;
+bb(XL, TOP0, bz0, W, WT, SINK.z0, M.wood);           // front strip
+bb(XL, TOP0, SINK.z1, W, WT, L, M.wood);             // back strip
+bb(XL, TOP0, SINK.z0, SINK.x0, WT, SINK.z1, M.wood); // left
+bb(SINK.x1, TOP0, SINK.z0, W, WT, SINK.z1, M.wood); // right
+ROOT = scene;
+// upstand / tiled splashback along both runs
+bb(0, WT, L - 0.012, W, WIN_B.sill, L, M.splash, scene, false);
+bb(W - 0.012, WT, PASS.z1, W, WU.y0, L, M.splash, scene, false);
+splashTex.repeat.set(4, 1);
+
+// ---- Inset stainless sink: bowl on the right-hand end, drainer to the left ----
+ROOT = topGroup;
+const RIM = 0.006;
+bb(SINK.x0, WT, SINK.z0, BOWL.x0, WT + RIM, SINK.z1, M.steel);
+bb(BOWL.x1, WT, SINK.z0, SINK.x1, WT + RIM, SINK.z1, M.steel);
+bb(BOWL.x0, WT, SINK.z0, BOWL.x1, WT + RIM, BOWL.z0, M.steel);
+bb(BOWL.x0, WT, BOWL.z1, BOWL.x1, WT + RIM, SINK.z1, M.steel);
+// bowl interior (open-top box rendered from inside)
+const bowl = new THREE.Mesh(new THREE.BoxGeometry(BOWL.x1 - BOWL.x0, BOWL.d, BOWL.z1 - BOWL.z0), M.steelIn);
+bowl.position.set((BOWL.x0 + BOWL.x1) / 2, WT + RIM - BOWL.d / 2, (BOWL.z0 + BOWL.z1) / 2);
+bowl.receiveShadow = true; ROOT.add(bowl);
+const plug = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.004, 32), M.chrome);
+plug.position.set((BOWL.x0 + BOWL.x1) / 2, WT + RIM - BOWL.d + 0.002, (BOWL.z0 + BOWL.z1) / 2); ROOT.add(plug);
+// drainer grooves
+for (let x = BOWL.x1 + 0.07; x < SINK.x1 - 0.05; x += 0.035)
+  bb(x, WT + RIM, BOWL.z0 + 0.02, x + 0.006, WT + RIM + 0.002, BOWL.z1 - 0.02, M.steelIn.clone(), ROOT, false).material.side = THREE.FrontSide;
+// mixer tap behind the bowl
+const tapX = (BOWL.x0 + BOWL.x1) / 2, tapZ = (BOWL.z1 + SINK.z1) / 2 + 0.01;
+const tapBase = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.028, 0.03, 32), M.chrome);
+tapBase.position.set(tapX, WT + RIM + 0.015, tapZ); ROOT.add(tapBase);
+const neck = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+  new THREE.Vector3(tapX, WT + 0.02, tapZ), new THREE.Vector3(tapX, WT + 0.26, tapZ),
+  new THREE.Vector3(tapX, WT + 0.33, tapZ - 0.06), new THREE.Vector3(tapX, WT + 0.27, tapZ - 0.17),
+]), 32, 0.011, 16), M.chrome);
+neck.castShadow = true; ROOT.add(neck);
+const lever = box(0.012, 0.012, 0.08, M.chrome, tapX + 0.03, WT + 0.12, tapZ + 0.02);
+ROOT = scene;
+
+// ---- Dimension lines ----
+const dims = new THREE.Group(); scene.add(dims);
+function dimLine(a, b, text, off) {
+  const pts = [a, b].map(p => new THREE.Vector3(...p).add(new THREE.Vector3(...off)));
+  dims.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), M.dim));
+  for (const p of [a, b]) dims.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...p), new THREE.Vector3(...p).add(new THREE.Vector3(...off))]), M.dim));
+  const el = document.createElement('div'); el.className = 'lbl'; el.textContent = text;
+  const o = new CSS2DObject(el); o.position.copy(pts[0]).lerp(pts[1], 0.5); dims.add(o);
+}
+dimLine([0, 0.01, L + T], [W, 0.01, L + T], '1380 mm at sink wall', [0, 0, 0.35]);
+dimLine([XL - TL, 0.01, 0], [XL - TL, 0.01, L], '2780 mm', [-0.35, 0, 0]);
+// measured details (from the hand sketch)
+const dy = 2.3;
+dimLine([WIN_B.x0, dy, L], [WIN_B.x1, dy, L], 'Window 1100 mm', [0, 0, -0.06]);
+dimLine([0, dy, L], [WIN_B.x0, dy, L], '270 mm', [0, 0, -0.06]);
+dimLine([XL + 0.005, dy, WIN_L.z0], [XL + 0.005, dy, WIN_L.z1], `Window ${Math.round((WIN_L.z1 - WIN_L.z0) * 1000)} mm`, [0.04, 0, 0]);
+dimLine([XL - WIN_L.reveal, WIN_L.sill + 0.01, 1.2], [XL, WIN_L.sill + 0.01, 1.2], 'Sill 190 mm deep', [0, 0.02, 0]);
+dimLine([0.9, WIN_B.sill + 0.01, L], [0.9, WIN_B.sill + 0.01, L + WIN_B.recess], 'Recessed 40 mm', [0, 0.02, 0]);
+dimLine([W - 0.005, WT + 0.01, RUN_R.z0], [W - 0.005, WT + 0.01, L], 'Worktop 1850 mm', [-0.03, 0, 0]);
+dimLine([RUN_R.x0 - OH, WT + 0.01, 1.3], [W, WT + 0.01, 1.3], 'Depth 600 mm', [0, 0.01, 0]);
+dimLine([1.15, WT + 0.01, RUN_B.z0 - OH], [1.15, WT + 0.01, L], 'Depth 590 mm', [0, 0.01, 0]);
+dimLine([0.04, 1.09, 0.09], [0.44, 1.09, 0.09], 'Electric towel rail 400 × 800 mm', [0, 0, 0]);
+dimLine([XL + 0.005, 1.6, 0], [XL + 0.005, 1.6, PILLAR.z], 'Pillar 190 mm', [0.04, 0, 0]);
+dimLine([XL, 1.0, 0.02], [DOOR.x0 - 0.035, 1.0, 0.02], 'Sill to door frame 480 mm', [0, 0, 0]);
+dimLine([XL, PL + 0.02, L - 0.3], [XL + BU_W, PL + 0.02, L - 0.3], 'Unit 1200 mm', [0, 0, 0]);
+dimLine([0, WT + 0.01, RUN_B.z0 - OH], [W, WT + 0.01, RUN_B.z0 - OH], 'Front 1380 mm', [0, 0.06, -0.04]);
+dimLine([SB, 0.5, RUN_B.z0 - 0.005], [RUN_R.x0, 0.5, RUN_B.z0 - 0.005], 'Face plate 200 × 760 mm', [0, 0, -0.03]);
+dimLine([XL + BU_W, PL + 0.02, L - 0.3], [W, PL + 0.02, L - 0.3], `Gap ${Math.round((W - XL - BU_W) * 1000)} mm`, [0, 0, 0]);
+
+// ---- Cutaway: hide walls between the camera and the room ----
+function updateWalls() {
+  for (const w of walls) {
+    const toCam = camera.position.clone().sub(w.center);
+    const hide = toCam.dot(w.normal) > 0.2 && camera.position.y < 9;
+    w.g.visible = !hide;
+    w.foot.visible = hide;
+  }
+}
+
+// ---- Views ----
+const target = new THREE.Vector3(W / 2, 0.75, L / 2);
+const views = {
+  v3d: { pos: [-2.7, 2.9, L / 2 + 1.1], tgt: [W / 2 + 0.2, 0.7, L / 2 + 0.15] },
+  vdoor: { pos: [-2.3, 3.9, -1.9], tgt: [W / 2 + 0.1, 0.6, L / 2 + 0.2] },
+  vplan: { pos: [W / 2, 10, L / 2 + 0.001], tgt: [W / 2, 0, L / 2] },
+  vsink: { pos: [0.55, 1.62, 0.35], tgt: [0.75, 0.95, L] },
+};
+let anim = null, baseFov = 40;
+// on tall/narrow screens (phones) widen the vertical FOV so the room still fits across the width
+function fitFov(base) {
+  const a = innerWidth / innerHeight, ref = 1.2;
+  if (a >= ref) return base;
+  const h = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(base) / 2) * ref);
+  return Math.min(85, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(h / 2) / a)));
+}
+function go(name, instant) {
+  const v = views[name];
+  document.querySelectorAll('#v3d,#vdoor,#vplan,#vsink').forEach(b => b.classList.toggle('on', b.id === name));
+  baseFov = name === 'vplan' ? 22 : name === 'vsink' ? 60 : 40; camera.fov = fitFov(baseFov); camera.updateProjectionMatrix();
+  const to = { pos: new THREE.Vector3(...v.pos), tgt: new THREE.Vector3(...v.tgt) };
+  if (instant) { camera.position.copy(to.pos); controls.target.copy(to.tgt); return; }
+  anim = { from: { pos: camera.position.clone(), tgt: controls.target.clone() }, to, t: 0 };
+}
+for (const id of ['v3d', 'vdoor', 'vplan', 'vsink']) document.getElementById(id).onclick = () => go(id);
+document.getElementById('open').onclick = e => {
+  const off = doorsGroup.visible;
+  doorsGroup.visible = topGroup.visible = !off;
+  e.target.classList.toggle('on', off);
+};
+// phones: start with the 3D labels off to keep the view clear (tap Dimensions to show them)
+// CSS2D labels ignore their parent's visibility, so toggle each one too
+function setDims(v) {
+  dims.visible = v;
+  dims.traverse(o => { if (o.isCSS2DObject) o.visible = v; });
+  document.getElementById('dims').classList.toggle('on', v);
+}
+if (innerWidth < 700) setDims(false);
+document.getElementById('dims').onclick = () => setDims(!dims.visible);
+go(views[location.hash.slice(1)] ? location.hash.slice(1) : 'v3d', true);
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); labelR.setSize(w, h);
+  camera.aspect = w / h; camera.fov = fitFov(baseFov); camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+renderer.setAnimationLoop(() => {
+  if (anim) {
+    anim.t = Math.min(1, anim.t + 0.03);
+    const k = anim.t * anim.t * (3 - 2 * anim.t);
+    camera.position.lerpVectors(anim.from.pos, anim.to.pos, k);
+    controls.target.lerpVectors(anim.from.tgt, anim.to.tgt, k);
+    if (anim.t >= 1) anim = null;
+  }
+  controls.update();
+  updateWalls();
+  renderer.render(scene, camera);
+  labelR.render(scene, camera);
+});
+</script>
+</body>
+</html>
