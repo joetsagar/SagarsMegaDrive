@@ -22,6 +22,7 @@
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#c9c1b2; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#c9c1b2; --heater:#4a3430; } }
   :root[data-theme="dark"] #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#c9c1b2; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#c9c1b2; --heater:#4a3430; }
   #plan2d[hidden] { display:none; }
+  #plan2d.kitchen-hidden #kitchen-items, #plan2d.kitchen-hidden .sched { display:none; }
   #plan2d .wrap { max-width:1000px; margin:0 auto; }
   #plan2d .sheet { background:#fff; border-radius:4px; box-shadow:0 1px 8px rgba(0,0,0,.12); padding:8px; }
   #plan2d .sched { width:100%; border-collapse:collapse; margin-top:14px; font:12px/1.4 Arial, Helvetica, sans-serif; background:#fff; color:#1d1d1f; }
@@ -250,8 +251,8 @@ tag(11, 150, 800, -100, 900);                             // long window
 LAYER = svg;   // back to the room shell
 
 // ---- Room label ----
-text(380, 1150, 'UTILITY', { size: 64, weight: 700, ls: 6 });
-text(380, 1230, '2780 × 1360', { size: 34, color: MID });
+const roomLabel = text(380, 1150, 'UTILITY', { size: 64, weight: 700, ls: 6 });
+const roomSize = text(380, 1230, '2780 × 1360', { size: 34, color: MID });
 LAYER = kitchenLayer;
 text(380, 1280, 'WORKTOP H 910', { size: 28, color: MID });
 LAYER = svg;
@@ -304,15 +305,22 @@ text(TBX + TBW / 2 + 30, TBY + 225, 'sagarsmegadrive.online/utility', { size: 24
 
   // print the 2D plan (browser print dialog: choose "Save as PDF")
   document.getElementById('printPlan').addEventListener('click', () => window.print());
-  // toggle between the empty room shell and the furnished plan (also hides/shows the schedule)
+  // toggle between the empty room shell and the furnished plan (also hides/shows the schedule);
+  // a CSS class on the panel (rather than touching kitchenLayer's own style) repaints reliably
+  // everywhere, including iOS Safari, where toggling display on an SVG <g> directly can stick.
   const kitchenBtn = document.getElementById('toggleKitchen');
-  const schedTable = document.querySelector('#plan2d .sched');
+  const plan2d = document.getElementById('plan2d');
+  const roomCenterX = W / 2, roomCenterZ = L / 2;
   let kitchenShown = true;
   kitchenBtn.addEventListener('click', () => {
     kitchenShown = !kitchenShown;
-    kitchenLayer.style.display = kitchenShown ? '' : 'none';
-    if (schedTable) schedTable.style.display = kitchenShown ? '' : 'none';
+    plan2d.classList.toggle('kitchen-hidden', !kitchenShown);
     kitchenBtn.textContent = kitchenShown ? 'Hide kitchen items' : 'Show kitchen items';
+    // centre the room label + overall size in the room when it's empty; restore when furnished
+    const [lx, ly] = kitchenShown ? [380, 1150] : [roomCenterX, roomCenterZ - 40];
+    const [sx, sy] = kitchenShown ? [380, 1230] : [roomCenterX, roomCenterZ + 40];
+    roomLabel.setAttribute('x', lx); roomLabel.setAttribute('y', ly);
+    roomSize.setAttribute('x', sx); roomSize.setAttribute('y', sy);
   });
   // printing from the 3D view still prints the plan
   // menu: "2D plan" shows the plan; any 3D view button goes back to 3D
