@@ -80,7 +80,7 @@
         <tr><td>9</td><td>Triple switched socket</td><td>225 × 86</td><td>1120 AFF (210 above worktop)</td></tr>
         <tr><td>10</td><td>Inset sink, bowl + drainer</td><td>1000 × 490</td><td>Bowl over the 600 door</td></tr>
         <tr><td>11</td><td>Window, tiled sill &amp; reveals</td><td>2240, 190 deep reveal</td><td>Sill at 950 AFF</td></tr>
-        <tr><td>—</td><td>Worktops</td><td>1360 × 600 + 1250 × 600</td><td>Sink-wall top full width; washer top butts into it</td></tr>
+        <tr><td>—</td><td>Worktops</td><td>1360 × 600 + 1230 × 600</td><td>Sink-wall top full width; washer top butts into it</td></tr>
         <tr><td>—</td><td>Sink window</td><td>1100 w</td><td>Recessed 40, sill 1030 AFF</td></tr>
       </tbody>
     </table>
@@ -95,16 +95,16 @@
 // the room, numbered tags keyed to the schedule below the drawing.
 const W = 1360, L = 2780, T = 180, TL = 320;
 const DOOR = { x0: 515, x1: 1275, arch: 35 };
-const PASS = { z1: 930 };
+const PASS = { z1: 950 };
 const WIN_L = { z0: 350, z1: 2590, reveal: 190 };
-const WIN_B = { x0: 250, x1: 1350, recess: 40 };
-const TOP_R = { x0: 760, z0: 930, z1: 2180 };          // washer-side worktop 1250 × 600
+const WIN_B = { x0: 260, x1: 1360, recess: 40 };
+const TOP_R = { x0: 760, z0: 950, z1: 2180 };          // washer-side worktop 1230 × 600
 const TOP_B = { z0: 2180 };                             // sink-wall worktop 1360 × 600
 const UNIT = { x1: 1200, z0: 2200, door: 600 };         // 1200 base unit, carcass front at z=2200
 const FRONT = 800;                                      // washer / face-plate front line
 const EP = 18, APP_W = (UNIT.z0 - EP - TOP_R.z0 - 18) / 2;
 const SINK = { x0: 40, x1: 1040, z0: 2240, z1: 2730 }, BOWL = { x0: 90, x1: 510, z0: 2310, z1: 2660 };
-const WU = { x0: W - 320, a: [930, 2130], b: [2130, 2430] };
+const WU = { x0: W - 320, a: [950, 2150], b: [2150, 2450] };
 const RAIL = { x0: 40, x1: 440, z0: 75, z1: 105 };
 const SOCKET_Z = TOP_R.z0 + 18 + APP_W;
 
@@ -230,7 +230,7 @@ tag(3, 1120, 2420);                                       // 1200 base unit
 tag(4, 700, 2085, 700, 2185);                             // face plate
 tag(5, 1250, 2090, 1250, 2185);                           // end panel
 tag(6, 1290, 2440);                                       // gap
-tag(7, 900, 760, 1150, 930);                              // wall units (leader to their end)
+tag(7, 900, 760, 1150, 950);                              // wall units (leader to their end)
 tag(8, 240, 300, 240, 105);                               // towel rail
 tag(9, 1250, SOCKET_Z, W - 30, SOCKET_Z);                // socket
 tag(10, 760, 2485);                                       // sink
@@ -250,7 +250,7 @@ dim(0, L, LX2, '2780', 'z');
 // sink wall (bottom)
 const BY1 = L + T + 170, BY2 = L + T + 330;
 for (const x of [0, WIN_B.x0, WIN_B.x1, W]) ext(x, L + T + 40, x, BY2 + 30);
-dim(0, WIN_B.x0, BY1, '250', 'x', 1); dim(WIN_B.x0, WIN_B.x1, BY1, 'WINDOW 1100', 'x', 1);
+dim(0, WIN_B.x0, BY1, '260', 'x', 1); dim(WIN_B.x0, WIN_B.x1, BY1, 'WINDOW 1100', 'x', 1);
 dim(0, W, BY2, '1360', 'x', 1);
 // door wall (top)
 const TY1 = -T - 170, TY2 = -T - 330;
@@ -261,8 +261,8 @@ dim(0, W, TY2, '1360', 'x');
 // washer wall (right)
 const RX1 = W + T + 170, RX2 = W + T + 330;
 for (const z of [0, PASS.z1, TOP_B.z0, L]) ext(W + T + 40, z, RX2 + 30, z);
-dim(0, PASS.z1, RX1, 'OPENING 930', 'z', 1); dim(PASS.z1, TOP_B.z0, RX1, '1250', 'z', 1); dim(TOP_B.z0, L, RX1, '600', 'z', 1);
-dim(PASS.z1, L, RX2, 'WORKTOP 1850', 'z', 1);
+dim(0, PASS.z1, RX1, 'OPENING 950', 'z', 1); dim(PASS.z1, TOP_B.z0, RX1, '1230', 'z', 1); dim(TOP_B.z0, L, RX1, '600', 'z', 1);
+dim(PASS.z1, L, RX2, 'WORKTOP 1830', 'z', 1);
 // inside: run along the sink-unit front (one chain) + walkway + worktop depths
 const CY = TOP_B.z0 - 280;
 for (const x of [0, UNIT.door, FRONT]) ext(x, TOP_B.z0 - 20, x, CY - 25);
@@ -320,15 +320,15 @@ const W = 1.36, L = 2.78, H = 2.25, T = 0.18;     // interior width/length, ceil
 const TL = 0.32;                                  // left wall is thicker: long window sits in a 19 cm deep reveal
 const DOOR_ARCH = 0.035;                          // architrave half-width each side of the door opening
 const DOOR = { x0: 0.48 + 0.035, x1: 0.48 + 0.035 + 0.76, h: 2.04 };  // door in top wall, opens outward; frame starts 480 mm from the window wall
-const PASS = { z0: 0, z1: 0.93, h: 2.04 };        // open passage in right wall, top end
+const PASS = { z0: 0, z1: 0.95, h: 2.04 };        // open passage in right wall, top end
 const PIER = { len: 0.19 };                             // gap from the sink wall to the end of the long window
 const XL = 0;                                     // left wall face is flush with the window sill (no step)
 const WIN_L = { z1: 2.78 - PIER.len, len: 2.24, sill: 0.95, head: 2.10, reveal: 0.19 }; // long window starts at the end of the kitchen unit
 const PILLAR = { x: 0, z: 0.35 };                 // 350 mm pillar at the door end of the window, face flush with the sill
 WIN_L.z0 = PILLAR.z;                              // window runs from the pillar to the end of the sink unit
-const WIN_B = { x0: 0.25, x1: 1.35, sill: 1.03, head: 2.12, recess: 0.04 }; // 110 cm single pane, recessed 4 cm
+const WIN_B = { x0: 0.26, x1: 1.36, sill: 1.03, head: 2.12, recess: 0.04 }; // 110 cm single pane, recessed 4 cm
 const WT = 0.91;                                  // worktop height
-const RUN_R = { x0: 1.36 - 0.60 + 0.02, z0: 2.78 - 1.85 }; // right-hand worktop: 1850 long from the sink wall, 600 deep (incl. 20 overhang)
+const RUN_R = { x0: 1.36 - 0.60 + 0.02, z0: 2.78 - 1.83 }; // right-hand worktop: 1830 long from the sink wall, 600 deep (incl. 20 overhang)
 const RUN_B = { z0: 2.78 - 0.60 + 0.02 };          // worktop along sink wall: 600 deep (incl. 20 overhang)
 const SINK = { x0: 0.04, x1: 1.04, z0: 2.24, z1: 2.73 };   // sink at the right-hand end, drainer to the left
 const BOWL = { x0: 0.09, x1: 0.51, z0: 2.31, z1: 2.66, d: 0.18 };
@@ -771,7 +771,7 @@ function tiles(x0, y0, z0, x1, y1, z1, parent = scene) {
 }
 const TILE_TOP = WU.y0;                                   // tiles run up to the underside of the wall units (1450)
 tiles(0, WT, L - 0.012, W, WIN_B.sill, L);                // sink wall, worktop to window sill
-tiles(0, WIN_B.sill, L - 0.012, WIN_B.x0, TILE_TOP, L);   // sink wall beside the window (250 mm), up to 1450
+tiles(0, WIN_B.sill, L - 0.012, WIN_B.x0, TILE_TOP, L);   // sink wall beside the window (260 mm), up to 1450
 tiles(WIN_B.x1, WIN_B.sill, L - 0.012, W, TILE_TOP, L);   // sliver beside the window on the other side
 tiles(0, WT, WIN_L.z1, 0.012, TILE_TOP, L - 0.012);       // left wall above the sink worktop, up to 1450
 tiles(W - 0.012, WT, PASS.z1, W, TILE_TOP, L);            // washer wall, worktop to wall units
@@ -826,11 +826,11 @@ dimLine([XL - TL, 0.01, 0], [XL - TL, 0.01, L], '2780 mm', [-0.35, 0, 0]);
 // measured details (from the hand sketch)
 const dy = 2.3;
 dimLine([WIN_B.x0, dy, L], [WIN_B.x1, dy, L], 'Window 1100 mm', [0, 0, -0.06]);
-dimLine([0, dy, L], [WIN_B.x0, dy, L], '250 mm', [0, 0, -0.06]);
+dimLine([0, dy, L], [WIN_B.x0, dy, L], '260 mm', [0, 0, -0.06]);
 dimLine([XL + 0.005, dy, WIN_L.z0], [XL + 0.005, dy, WIN_L.z1], `Window ${Math.round((WIN_L.z1 - WIN_L.z0) * 1000)} mm`, [0.04, 0, 0]);
 dimLine([XL - WIN_L.reveal, WIN_L.sill + 0.01, 1.2], [XL, WIN_L.sill + 0.01, 1.2], 'Sill 190 mm deep', [0, 0.02, 0]);
 dimLine([0.9, WIN_B.sill + 0.01, L], [0.9, WIN_B.sill + 0.01, L + WIN_B.recess], 'Recessed 40 mm', [0, 0.02, 0]);
-dimLine([W - 0.005, WT + 0.01, RUN_R.z0], [W - 0.005, WT + 0.01, L], 'Worktop 1850 mm', [-0.03, 0, 0]);
+dimLine([W - 0.005, WT + 0.01, RUN_R.z0], [W - 0.005, WT + 0.01, L], 'Worktop 1830 mm', [-0.03, 0, 0]);
 dimLine([RUN_R.x0 - OH, WT + 0.01, 1.3], [W, WT + 0.01, 1.3], 'Depth 600 mm', [0, 0.01, 0]);
 dimLine([1.15, WT + 0.01, RUN_B.z0 - OH], [1.15, WT + 0.01, L], 'Depth 600 mm', [0, 0.01, 0]);
 dimLine([RUN_R.x0 - OH, WT + 0.012, RUN_R.z0], [RUN_R.x0 - OH, WT + 0.012, RUN_B.z0 - OH], `Washer top ${Math.round((RUN_B.z0 - OH - RUN_R.z0) * 1000)} × 600 mm`, [0, 0.03, 0]);
