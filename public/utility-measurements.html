@@ -13,7 +13,7 @@
   .ui { position:fixed; left:16px; top:16px; background:var(--panel); padding:12px 14px; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.15); max-width:calc(100vw - 60px); }
   .ui h1 { font-size:15px; margin:0 0 2px; }
   .ui p { font-size:12px; margin:0 0 10px; color:var(--muted); }
-  .ui button { font:inherit; font-size:12px; border:1px solid var(--accent); background:transparent; color:var(--accent); border-radius:6px; padding:5px 9px; margin:0 4px 4px 0; cursor:pointer; }
+  .ui button { font:inherit; font-size:12px; border:1px solid var(--accent); background:transparent; color:var(--accent); border-radius:6px; padding:5px 9px; margin:0 4px 4px 0; cursor:pointer; touch-action:manipulation; }
   .ui button.on { background:var(--accent); color:#fff; }
   .ui { z-index:10; }
   #plan2d { position:fixed; inset:0; overflow:auto; background:var(--bg); z-index:5; padding:150px 16px 40px; box-sizing:border-box;
@@ -35,7 +35,7 @@
   #plan2d .sw { width:16px; height:12px; border:1.5px solid; border-radius:2px; display:inline-block; }
   #plan2d .notes { margin-top:14px; font-size:13px; color:var(--muted); line-height:1.5; }
   #plan2d .planbar { display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px; }
-  #plan2d .planbar button { font:600 13px system-ui, sans-serif; border:0; border-radius:8px; padding:9px 14px; background:var(--accent); color:#fff; cursor:pointer; }
+  #plan2d .planbar button { font:600 13px system-ui, sans-serif; border:0; border-radius:8px; padding:9px 14px; background:var(--accent); color:#fff; cursor:pointer; touch-action:manipulation; }
   #plan2d .planbar button.ghost { background:transparent; color:var(--accent); border:1.5px solid var(--accent); }
   /* Print / Save as PDF: plan on page 1 at true 1:20 on A4, schedule on page 2 */
   @page { size: A4 portrait; margin: 10mm; }
@@ -312,15 +312,24 @@ text(TBX + TBW / 2 + 30, TBY + 225, 'sagarsmegadrive.online/utility', { size: 24
   const plan2d = document.getElementById('plan2d');
   const roomCenterX = W / 2, roomCenterZ = L / 2;
   let kitchenShown = true;
-  kitchenBtn.addEventListener('click', () => {
-    kitchenShown = !kitchenShown;
+  // sets every bit of UI from kitchenShown directly (rather than incrementally toggling each
+  // one) so a stray double-fired click can never leave the button text, layer and labels
+  // disagreeing with each other - whichever value kitchenShown ends on, everything matches it.
+  function applyKitchenState() {
     plan2d.classList.toggle('kitchen-hidden', !kitchenShown);
     kitchenBtn.textContent = kitchenShown ? 'Hide kitchen items' : 'Show kitchen items';
-    // centre the room label + overall size in the room when it's empty; restore when furnished
     const [lx, ly] = kitchenShown ? [380, 1150] : [roomCenterX, roomCenterZ - 40];
     const [sx, sy] = kitchenShown ? [380, 1230] : [roomCenterX, roomCenterZ + 40];
     roomLabel.setAttribute('x', lx); roomLabel.setAttribute('y', ly);
     roomSize.setAttribute('x', sx); roomSize.setAttribute('y', sy);
+  }
+  let lastToggle = 0;
+  kitchenBtn.addEventListener('click', () => {
+    const now = Date.now();
+    if (now - lastToggle < 400) return;   // ignore a duplicate/ghost click fired right after the real one
+    lastToggle = now;
+    kitchenShown = !kitchenShown;
+    applyKitchenState();
   });
   // printing from the 3D view still prints the plan
   // menu: "2D plan" shows the plan; any 3D view button goes back to 3D
