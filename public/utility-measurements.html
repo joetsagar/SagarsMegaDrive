@@ -58,7 +58,7 @@
 <canvas id="c"></canvas>
 <div class="ui">
   <h1>Utility measurements</h1>
-  <p id="hint">2780 × 1380 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
+  <p id="hint">2780 × 1360 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
   <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button><button id="schemeBtn">Scheme 1/5 ▸</button>
 </div>
 
@@ -74,13 +74,13 @@
         <tr><td>3</td><td>Base unit, blind corner</td><td>1200 × 560 × 720</td><td>600 door under sink bowl, blind section behind WM</td></tr>
         <tr><td>4</td><td>Face plate</td><td>200 × 760</td><td>Door edge to WM front line</td></tr>
         <tr><td>5</td><td>End panel</td><td>870 × 580 × 18</td><td>Between WM and base unit, floor to underside of top</td></tr>
-        <tr><td>6</td><td>Gap</td><td>180</td><td>Base unit to washer-wall, under sink top</td></tr>
+        <tr><td>6</td><td>Gap</td><td>160</td><td>Base unit to washer-wall, under sink top</td></tr>
         <tr><td>7</td><td>Wall units (over)</td><td>1200 + 300, 320 d × 720 h</td><td>Underside at 1450 AFF; LED strip below</td></tr>
         <tr><td>8</td><td>Electric towel rail</td><td>400 × 800</td><td>Bottom at 250 AFF, 90 off wall</td></tr>
         <tr><td>9</td><td>Triple switched socket</td><td>225 × 86</td><td>1120 AFF (210 above worktop)</td></tr>
         <tr><td>10</td><td>Inset sink, bowl + drainer</td><td>1000 × 490</td><td>Bowl over the 600 door</td></tr>
-        <tr><td>11</td><td>Window, tiled sill &amp; reveals</td><td>1990, 190 deep reveal</td><td>Sill at 950 AFF</td></tr>
-        <tr><td>—</td><td>Worktops</td><td>1380 × 600 + 1250 × 600</td><td>Sink-wall top full width; washer top butts into it</td></tr>
+        <tr><td>11</td><td>Window, tiled sill &amp; reveals</td><td>2240, 190 deep reveal</td><td>Sill at 950 AFF</td></tr>
+        <tr><td>—</td><td>Worktops</td><td>1360 × 600 + 1250 × 600</td><td>Sink-wall top full width; washer top butts into it</td></tr>
         <tr><td>—</td><td>Sink window</td><td>1100 w</td><td>Recessed 40, sill 1030 AFF</td></tr>
       </tbody>
     </table>
@@ -90,16 +90,16 @@
 <script>
 // ---- 2D plan (drawn to scale, mm) ----
 (() => {
-// ---- Geometry (mm). x: left wall (0) → right wall (1380). z: door wall (0) → sink wall (2780). ----
+// ---- Geometry (mm). x: left wall (0) → right wall (1360). z: door wall (0) → sink wall (2780). ----
 // Architectural plan: black linework on white, hatched walls, dimension strings in tiers outside
 // the room, numbered tags keyed to the schedule below the drawing.
-const W = 1380, L = 2780, T = 180, TL = 320;
+const W = 1360, L = 2780, T = 180, TL = 320;
 const DOOR = { x0: 515, x1: 1275, arch: 35 };
 const PASS = { z1: 930 };
-const WIN_L = { z0: 190, z1: 2180, reveal: 190 };
-const WIN_B = { x0: 270, x1: 1370, recess: 40 };
-const TOP_R = { x0: 780, z0: 930, z1: 2180 };          // washer-side worktop 1250 × 600
-const TOP_B = { z0: 2180 };                             // sink-wall worktop 1380 × 600
+const WIN_L = { z0: 350, z1: 2590, reveal: 190 };
+const WIN_B = { x0: 250, x1: 1350, recess: 40 };
+const TOP_R = { x0: 760, z0: 930, z1: 2180 };          // washer-side worktop 1250 × 600
+const TOP_B = { z0: 2180 };                             // sink-wall worktop 1360 × 600
 const UNIT = { x1: 1200, z0: 2200, door: 600 };         // 1200 base unit, carcass front at z=2200
 const FRONT = 800;                                      // washer / face-plate front line
 const EP = 18, APP_W = (UNIT.z0 - EP - TOP_R.z0 - 18) / 2;
@@ -238,26 +238,26 @@ tag(11, 150, 800, -100, 900);                             // long window
 
 // ---- Room label ----
 text(380, 1150, 'UTILITY', { size: 64, weight: 700, ls: 6 });
-text(380, 1230, '2780 × 1380', { size: 34, color: MID });
+text(380, 1230, '2780 × 1360', { size: 34, color: MID });
 text(380, 1280, 'WORKTOP H 910', { size: 28, color: MID });
 
 // ---- Dimension strings ----
 // left wall (tier 1: segments, tier 2: overall)
 const LX1 = -TL - 170, LX2 = -TL - 330;
 for (const z of [0, WIN_L.z0, WIN_L.z1, L]) ext(-TL - 40, z, LX2 - 30, z);
-dim(0, WIN_L.z0, LX1, '190', 'z'); dim(WIN_L.z0, WIN_L.z1, LX1, 'WINDOW 1990', 'z'); dim(WIN_L.z1, L, LX1, '600', 'z');
+dim(0, WIN_L.z0, LX1, '350', 'z'); dim(WIN_L.z0, WIN_L.z1, LX1, 'WINDOW 2240', 'z'); dim(WIN_L.z1, L, LX1, '190', 'z');
 dim(0, L, LX2, '2780', 'z');
 // sink wall (bottom)
 const BY1 = L + T + 170, BY2 = L + T + 330;
 for (const x of [0, WIN_B.x0, WIN_B.x1, W]) ext(x, L + T + 40, x, BY2 + 30);
-dim(0, WIN_B.x0, BY1, '270', 'x', 1); dim(WIN_B.x0, WIN_B.x1, BY1, 'WINDOW 1100', 'x', 1);
-dim(0, W, BY2, '1380', 'x', 1);
+dim(0, WIN_B.x0, BY1, '250', 'x', 1); dim(WIN_B.x0, WIN_B.x1, BY1, 'WINDOW 1100', 'x', 1);
+dim(0, W, BY2, '1360', 'x', 1);
 // door wall (top)
 const TY1 = -T - 170, TY2 = -T - 330;
 for (const x of [0, DOOR.x0 - DOOR.arch, DOOR.x0, DOOR.x1, DOOR.x1 + DOOR.arch, W]) ext(x, -T - 40, x, TY1 - 30);
 ext(0, -T - 40, 0, TY2 - 30); ext(W, -T - 40, W, TY2 - 30);
 dim(0, DOOR.x0 - DOOR.arch, TY1, '480', 'x'); dim(DOOR.x0, DOOR.x1, TY1, 'OPENING 760', 'x');
-dim(0, W, TY2, '1380', 'x');
+dim(0, W, TY2, '1360', 'x');
 // washer wall (right)
 const RX1 = W + T + 170, RX2 = W + T + 330;
 for (const z of [0, PASS.z1, TOP_B.z0, L]) ext(W + T + 40, z, RX2 + 30, z);
@@ -267,7 +267,7 @@ dim(PASS.z1, L, RX2, 'WORKTOP 1850', 'z', 1);
 const CY = TOP_B.z0 - 280;
 for (const x of [0, UNIT.door, FRONT]) ext(x, TOP_B.z0 - 20, x, CY - 25);
 dim(0, UNIT.door, CY, 'DOOR 600', 'x'); dim(UNIT.door, FRONT, CY, '200', 'x');
-dim(UNIT.x1, W, L - 70, 'GAP 180', 'x');
+dim(UNIT.x1, W, L - 70, 'GAP 160', 'x');
 dim(0, TOP_R.x0, 1560, 'CLEAR 780', 'x');
 dim(TOP_R.x0, W, TOP_R.z0 - 70, '600', 'x');
 
@@ -316,19 +316,19 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 
 // ---- Dimensions (metres), from the floor plan + hand-measured sketch ----
 // x = across the room (left wall → right wall), z = along the room (door wall → sink wall)
-const W = 1.38, L = 2.78, H = 2.4, T = 0.18;     // interior width/length, ceiling height, wall thickness
+const W = 1.36, L = 2.78, H = 2.25, T = 0.18;     // interior width/length, ceiling height, wall thickness
 const TL = 0.32;                                  // left wall is thicker: long window sits in a 19 cm deep reveal
 const DOOR_ARCH = 0.035;                          // architrave half-width each side of the door opening
 const DOOR = { x0: 0.48 + 0.035, x1: 0.48 + 0.035 + 0.76, h: 2.04 };  // door in top wall, opens outward; frame starts 480 mm from the window wall
 const PASS = { z0: 0, z1: 0.93, h: 2.04 };        // open passage in right wall, top end
-const PIER = { len: 0.60 };                             // long window starts at the end of the sink-wall unit
+const PIER = { len: 0.19 };                             // gap from the sink wall to the end of the long window
 const XL = 0;                                     // left wall face is flush with the window sill (no step)
 const WIN_L = { z1: 2.78 - PIER.len, len: 2.24, sill: 0.95, head: 2.10, reveal: 0.19 }; // long window starts at the end of the kitchen unit
-const PILLAR = { x: 0, z: 0.19 };                 // 190 mm pillar at the door end of the window, face flush with the sill
+const PILLAR = { x: 0, z: 0.35 };                 // 350 mm pillar at the door end of the window, face flush with the sill
 WIN_L.z0 = PILLAR.z;                              // window runs from the pillar to the end of the sink unit
-const WIN_B = { x0: 0.27, x1: 1.37, sill: 1.03, head: 2.12, recess: 0.04 }; // 110 cm single pane, recessed 4 cm
+const WIN_B = { x0: 0.25, x1: 1.35, sill: 1.03, head: 2.12, recess: 0.04 }; // 110 cm single pane, recessed 4 cm
 const WT = 0.91;                                  // worktop height
-const RUN_R = { x0: 1.38 - 0.60 + 0.02, z0: 2.78 - 1.85 }; // right-hand worktop: 1850 long from the sink wall, 600 deep (incl. 20 overhang)
+const RUN_R = { x0: 1.36 - 0.60 + 0.02, z0: 2.78 - 1.85 }; // right-hand worktop: 1850 long from the sink wall, 600 deep (incl. 20 overhang)
 const RUN_B = { z0: 2.78 - 0.60 + 0.02 };          // worktop along sink wall: 600 deep (incl. 20 overhang)
 const SINK = { x0: 0.04, x1: 1.04, z0: 2.24, z1: 2.73 };   // sink at the right-hand end, drainer to the left
 const BOWL = { x0: 0.09, x1: 0.51, z0: 2.31, z1: 2.66, d: 0.18 };
@@ -361,7 +361,7 @@ controls.screenSpacePanning = true;
 // touch: one finger orbits, two fingers pinch-zoom and drag to pan; slower so it's easier to control
 controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 if (matchMedia('(pointer: coarse)').matches) {
-  document.getElementById('hint').textContent = '2780 × 1380 mm · 1 finger: rotate · 2 fingers: pinch to zoom, drag to move';
+  document.getElementById('hint').textContent = '2780 × 1360 mm · 1 finger: rotate · 2 fingers: pinch to zoom, drag to move';
   controls.rotateSpeed = 0.55;
   controls.zoomSpeed = 0.8;
   controls.panSpeed = 0.7;
@@ -771,7 +771,7 @@ function tiles(x0, y0, z0, x1, y1, z1, parent = scene) {
 }
 const TILE_TOP = WU.y0;                                   // tiles run up to the underside of the wall units (1450)
 tiles(0, WT, L - 0.012, W, WIN_B.sill, L);                // sink wall, worktop to window sill
-tiles(0, WIN_B.sill, L - 0.012, WIN_B.x0, TILE_TOP, L);   // sink wall beside the window (270 mm), up to 1450
+tiles(0, WIN_B.sill, L - 0.012, WIN_B.x0, TILE_TOP, L);   // sink wall beside the window (250 mm), up to 1450
 tiles(WIN_B.x1, WIN_B.sill, L - 0.012, W, TILE_TOP, L);   // sliver beside the window on the other side
 tiles(0, WT, WIN_L.z1, 0.012, TILE_TOP, L - 0.012);       // left wall above the sink worktop, up to 1450
 tiles(W - 0.012, WT, PASS.z1, W, TILE_TOP, L);            // washer wall, worktop to wall units
@@ -821,12 +821,12 @@ function dimLine(a, b, text, off) {
   const el = document.createElement('div'); el.className = 'lbl'; el.textContent = text;
   const o = new CSS2DObject(el); o.position.copy(pts[0]).lerp(pts[1], 0.5); dims.add(o);
 }
-dimLine([0, 0.01, L + T], [W, 0.01, L + T], '1380 mm at sink wall', [0, 0, 0.35]);
+dimLine([0, 0.01, L + T], [W, 0.01, L + T], '1360 mm at sink wall', [0, 0, 0.35]);
 dimLine([XL - TL, 0.01, 0], [XL - TL, 0.01, L], '2780 mm', [-0.35, 0, 0]);
 // measured details (from the hand sketch)
 const dy = 2.3;
 dimLine([WIN_B.x0, dy, L], [WIN_B.x1, dy, L], 'Window 1100 mm', [0, 0, -0.06]);
-dimLine([0, dy, L], [WIN_B.x0, dy, L], '270 mm', [0, 0, -0.06]);
+dimLine([0, dy, L], [WIN_B.x0, dy, L], '250 mm', [0, 0, -0.06]);
 dimLine([XL + 0.005, dy, WIN_L.z0], [XL + 0.005, dy, WIN_L.z1], `Window ${Math.round((WIN_L.z1 - WIN_L.z0) * 1000)} mm`, [0.04, 0, 0]);
 dimLine([XL - WIN_L.reveal, WIN_L.sill + 0.01, 1.2], [XL, WIN_L.sill + 0.01, 1.2], 'Sill 190 mm deep', [0, 0.02, 0]);
 dimLine([0.9, WIN_B.sill + 0.01, L], [0.9, WIN_B.sill + 0.01, L + WIN_B.recess], 'Recessed 40 mm', [0, 0.02, 0]);
@@ -835,10 +835,10 @@ dimLine([RUN_R.x0 - OH, WT + 0.01, 1.3], [W, WT + 0.01, 1.3], 'Depth 600 mm', [0
 dimLine([1.15, WT + 0.01, RUN_B.z0 - OH], [1.15, WT + 0.01, L], 'Depth 600 mm', [0, 0.01, 0]);
 dimLine([RUN_R.x0 - OH, WT + 0.012, RUN_R.z0], [RUN_R.x0 - OH, WT + 0.012, RUN_B.z0 - OH], `Washer top ${Math.round((RUN_B.z0 - OH - RUN_R.z0) * 1000)} × 600 mm`, [0, 0.03, 0]);
 dimLine([0.04, 1.09, 0.09], [0.44, 1.09, 0.09], 'Electric towel rail 400 × 800 mm', [0, 0, 0]);
-dimLine([XL + 0.005, 1.6, 0], [XL + 0.005, 1.6, PILLAR.z], 'Pillar 190 mm', [0.04, 0, 0]);
+dimLine([XL + 0.005, 1.6, 0], [XL + 0.005, 1.6, PILLAR.z], 'Pillar 350 mm', [0.04, 0, 0]);
 dimLine([XL, 1.0, 0.02], [DOOR.x0 - 0.035, 1.0, 0.02], 'Sill to door frame 480 mm', [0, 0, 0]);
 dimLine([XL, PL + 0.02, L - 0.3], [XL + BU_W, PL + 0.02, L - 0.3], 'Unit 1200 mm', [0, 0, 0]);
-dimLine([0, WT + 0.01, RUN_B.z0 - OH], [W, WT + 0.01, RUN_B.z0 - OH], 'Front 1380 mm', [0, 0.06, -0.04]);
+dimLine([0, WT + 0.01, RUN_B.z0 - OH], [W, WT + 0.01, RUN_B.z0 - OH], 'Front 1360 mm', [0, 0.06, -0.04]);
 dimLine([SB, 0.5, RUN_B.z0 - 0.005], [RUN_R.x0, 0.5, RUN_B.z0 - 0.005], 'Face plate 200 × 760 mm', [0, 0, -0.03]);
 dimLine([RUN_R.x0 - 0.005, 0.02, RUN_B.z0 - EP], [RUN_R.x0 - 0.005, TOP0, RUN_B.z0 - EP], 'End panel 870 × 580', [-0.03, 0, -0.03]);
 dimLine([W - 0.02, WT, RUN_R.z0 + 0.018 + APP_W + 0.1], [W - 0.02, 1.12, RUN_R.z0 + 0.018 + APP_W + 0.1], 'Triple socket, 210 above worktop', [0, 0, 0]);
