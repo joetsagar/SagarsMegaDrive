@@ -98,7 +98,7 @@
 // Architectural plan: black linework on white, hatched walls, dimension strings in tiers outside
 // the room, numbered tags keyed to the schedule below the drawing.
 const W = 1360, L = 2780, T = 180, TL = 320;
-const DOOR = { x0: 515, x1: 1275, arch: 35 };
+const DOOR = { x0: 510, x1: 1325, arch: 35 };
 const PASS = { z1: 950 };
 const WIN_L = { z0: 350, z1: 2590, reveal: 190 };
 const WIN_B = { x0: 260, x1: 1360, recess: 40 };
@@ -271,15 +271,14 @@ dim(0, W, BY2, '1360', 'x', 1);
 const TY1 = -T - 170, TY2 = -T - 330;
 for (const x of [0, DOOR.x0 - DOOR.arch, DOOR.x0, DOOR.x1, DOOR.x1 + DOOR.arch, W]) ext(x, -T - 40, x, TY1 - 30);
 ext(0, -T - 40, 0, TY2 - 30); ext(W, -T - 40, W, TY2 - 30);
-dim(0, DOOR.x0 - DOOR.arch, TY1, '480', 'x'); dim(DOOR.x0, DOOR.x1, TY1, 'OPENING 760', 'x');
+dim(0, DOOR.x0 - DOOR.arch, TY1, '475', 'x'); dim(DOOR.x0, DOOR.x1, TY1, 'OPENING 815', 'x');
 dim(0, W, TY2, '1360', 'x');
 // washer wall (right)
 const RX1 = W + T + 170, RX2 = W + T + 330;
 for (const z of [0, PASS.z1, TOP_B.z0, L]) ext(W + T + 40, z, RX2 + 30, z);
-dim(0, PASS.z1, RX1, 'OPENING 950', 'z', 1);
+dim(0, PASS.z1, RX1, 'OPENING 950', 'z', 1); dim(PASS.z1, L, RX2, '1830', 'z', 1);
 LAYER = kitchenLayer;
 dim(PASS.z1, TOP_B.z0, RX1, '1230', 'z', 1); dim(TOP_B.z0, L, RX1, '600', 'z', 1);
-dim(PASS.z1, L, RX2, 'WORKTOP 1830', 'z', 1);
 // inside: run along the sink-unit front (one chain) + walkway + worktop depths
 const CY = TOP_B.z0 - 280;
 for (const x of [0, UNIT.door, FRONT]) ext(x, TOP_B.z0 - 20, x, CY - 25);
@@ -347,7 +346,7 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 const W = 1.36, L = 2.78, H = 2.25, T = 0.18;     // interior width/length, ceiling height, wall thickness
 const TL = 0.32;                                  // left wall is thicker: long window sits in a 19 cm deep reveal
 const DOOR_ARCH = 0.035;                          // architrave half-width each side of the door opening
-const DOOR = { x0: 0.48 + 0.035, x1: 0.48 + 0.035 + 0.76, h: 2.04 };  // door in top wall, opens outward; frame starts 480 mm from the window wall
+const DOOR = { x0: 0.475 + 0.035, x1: 0.475 + 0.035 + 0.815, h: 2.04 };  // door in top wall, opens outward; frame starts 475 mm from the window wall, runs flush to the washer-wall corner
 const PASS = { z0: 0, z1: 0.95, h: 2.04 };        // open passage in right wall, top end
 const PIER = { len: 0.19 };                             // gap from the sink wall to the end of the long window
 const XL = 0;                                     // left wall face is flush with the window sill (no step)
@@ -864,7 +863,7 @@ dimLine([1.15, WT + 0.01, RUN_B.z0 - OH], [1.15, WT + 0.01, L], 'Depth 600 mm', 
 dimLine([RUN_R.x0 - OH, WT + 0.012, RUN_R.z0], [RUN_R.x0 - OH, WT + 0.012, RUN_B.z0 - OH], `Washer top ${Math.round((RUN_B.z0 - OH - RUN_R.z0) * 1000)} × 600 mm`, [0, 0.03, 0]);
 dimLine([0.04, 1.09, 0.09], [0.44, 1.09, 0.09], 'Electric towel rail 400 × 800 mm', [0, 0, 0]);
 dimLine([XL + 0.005, 1.6, 0], [XL + 0.005, 1.6, PILLAR.z], 'Pillar 350 mm', [0.04, 0, 0]);
-dimLine([XL, 1.0, 0.02], [DOOR.x0 - 0.035, 1.0, 0.02], 'Sill to door frame 480 mm', [0, 0, 0]);
+dimLine([XL, 1.0, 0.02], [DOOR.x0 - 0.035, 1.0, 0.02], 'Sill to door frame 475 mm', [0, 0, 0]);
 dimLine([XL, PL + 0.02, L - 0.3], [XL + BU_W, PL + 0.02, L - 0.3], 'Unit 1200 mm', [0, 0, 0]);
 dimLine([0, WT + 0.01, RUN_B.z0 - OH], [W, WT + 0.01, RUN_B.z0 - OH], 'Front 1360 mm', [0, 0.06, -0.04]);
 dimLine([SB, 0.5, RUN_B.z0 - 0.005], [RUN_R.x0, 0.5, RUN_B.z0 - 0.005], 'Face plate 200 × 760 mm', [0, 0, -0.03]);
