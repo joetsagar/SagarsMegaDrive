@@ -61,7 +61,7 @@
 <div class="ui">
   <h1>Utility measurements</h1>
   <p id="hint">2780 × 1360 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
-  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button><button id="schemeBtn">Scheme 1/5 ▸</button>
+  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button>
 </div>
 
 <div id="plan2d" hidden>
@@ -926,33 +926,14 @@ for (const id of ['v3d', 'vdoor', 'vplan', 'vsink']) document.getElementById(id)
 document.getElementById('leds').onclick = e => { ledGroup.visible = !ledGroup.visible; e.target.classList.toggle('on', ledGroup.visible); };
 
 // ---- Colour schemes (cycle with the Scheme button) - units, worktop, splashback and walls; the floor never changes ----
-// Worktops are B&Q GoodHome ranges (Kala laminate, Kava solid beech, Nepeta compact laminate) plus the solid oak.
-// Units: B&Q GoodHome Ashmead in Pebble or Reed Green (colours approximate - check real samples).
 const UNIT = {
-  pebble: { name: 'Ashmead Pebble', cab: 0xa9a294, edge: 0x9c9587, plinth: 0x7a7468 },
-  reed:   { name: 'Ashmead Reed Green', cab: 0x9ca790, edge: 0x8f9a84, plinth: 0x6c7566 },
+  pebble: { name: 'Ashmead Matt Pebble', cab: 0xa9a294, edge: 0x9c9587, plinth: 0x7a7468 },
 };
 const SCHEMES = [
-  { unit: 'pebble', tiles: { name: 'Warm white gloss square, 100 × 100', layout: 'square', tile: '#f4f1e8', grout: '#c9c2b5', jitter: 4, rough: 0.2 },
-    grout: 'warm grey grout',
-    wall: { name: 'Farrow & Ball School House White', hex: 0xeee9dd },
-    top: { name: 'GoodHome Kala matt white quartz-effect laminate, 38 mm', kind: 'quartz', base: '#efede8', fleck: '#c9c6bf', vein: 'rgba(150,145,138,.35)', rough: 0.7, swatch: '#efede8' } },
   { unit: 'pebble', tiles: { name: 'Handmade-look warm white metro, 75 × 150 vertical stack', layout: 'metro', tile: '#f2eee3', grout: '#d5ccba', jitter: 12, rough: 0.15 },
     grout: '"jasmine" grout',
     wall: { name: 'Farrow & Ball Skimming Stone', hex: 0xdcd3c5 },
-    top: { name: 'Solid oak, 40 mm (current)', kind: 'wood', base: '#b98a5a', swatch: '#b98a5a', rough: 0.6 } },
-  { unit: 'pebble', tiles: { name: 'Soft sage gloss square, 100 × 100', layout: 'square', tile: '#b8c2ac', grout: '#e3ded2', jitter: 6, rough: 0.2 },
-    grout: 'off-white grout',
-    wall: { name: 'Little Greene Slaked Lime', hex: 0xe7e2d6 },
-    top: { name: 'GoodHome Kava solid beech, 27 mm', kind: 'wood', base: '#d2a77a', swatch: '#d2a77a', rough: 0.6 } },
-  { unit: 'reed', tiles: { name: 'Warm white gloss square, 100 × 100', layout: 'square', tile: '#f4f1e8', grout: '#cfcabf', jitter: 4, rough: 0.2 },
-    grout: 'light warm grey grout',
-    wall: { name: 'Farrow & Ball Wimborne White', hex: 0xf1ecdd },
-    top: { name: 'GoodHome Kala matt grey concrete-effect laminate, 38 mm', kind: 'concrete', base: '#9d9a95', fleck: '#8a8782', rough: 0.85, swatch: '#9d9a95' } },
-  { unit: 'reed', tiles: { name: 'Handmade-look warm white metro, 75 × 150 vertical stack', layout: 'metro', tile: '#f2eee3', grout: '#d5ccba', jitter: 12, rough: 0.15 },
-    grout: '"jasmine" grout',
-    wall: { name: 'Dulux Egyptian Cotton', hex: 0xebe4d6 },
-    top: { name: 'GoodHome Nepeta grey mineral-effect compact laminate, 12 mm', kind: 'mineral', base: '#6f6e6c', fleck: '#8d8b88', rough: 0.8, swatch: '#6f6e6c' } },
+    top: { name: 'Kala Authentic Oak Wood Effect Laminate Square Edge', kind: 'wood', base: '#b98a5a', swatch: '#b98a5a', rough: 0.6 } },
 ];
 
 function topTexture(o) {
@@ -995,26 +976,22 @@ function splashTexture(o) {
   return t;
 }
 const hex = n => '#' + n.toString(16).padStart(6, '0');
-let schemeIdx = 0;
-function applyScheme(i) {
-  schemeIdx = (i + SCHEMES.length) % SCHEMES.length;
-  const sc = SCHEMES[schemeIdx], u = UNIT[sc.unit];
+function applyScheme() {
+  const sc = SCHEMES[0], u = UNIT[sc.unit];
   M.cab.color.setHex(u.cab); M.cabEdge.color.setHex(u.edge); M.plinth.color.setHex(u.plinth);
   M.wall.color.setHex(sc.wall.hex);
   M.wood.map = topTexture(sc.top); M.wood.roughness = sc.top.rough; M.wood.envMapIntensity = 0.35; M.wood.needsUpdate = true;   // matt tops: keep reflections low so the true colour shows
   const st = splashTexture(sc.tiles);
   for (const m of splashMats) { const t = st.clone(); t.needsUpdate = true; t.repeat.copy(m.userData.rep); m.map = t; m.roughness = sc.tiles.rough; m.needsUpdate = true; }
-  document.getElementById('schemeBtn').textContent = `Scheme ${schemeIdx + 1}/${SCHEMES.length} ▸`;
   const sw = c => `<span class="sw" style="background:${c}"></span>`;
   document.getElementById('scheme').innerHTML =
-    `<b>Scheme ${schemeIdx + 1}: ${u.name}</b><br>` +
+    `<b>${u.name}</b><br>` +
     `${sw(hex(u.cab))}Units: ${u.name}<br>` +
     `${sw(sc.top.swatch)}Worktop: ${sc.top.name}<br>` +
     `${sw(sc.tiles.tile)}Splashback: ${sc.tiles.name}, ${sc.grout}<br>` +
     `${sw(hex(sc.wall.hex))}Walls: ${sc.wall.name}`;
 }
-document.getElementById('schemeBtn').onclick = () => applyScheme(schemeIdx + 1);
-applyScheme(0);
+applyScheme();
 document.getElementById('open').onclick = e => {
   const off = doorsGroup.visible;
   doorsGroup.visible = topGroup.visible = applGroup.visible = !off;
