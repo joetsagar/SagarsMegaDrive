@@ -76,7 +76,7 @@
       <tbody>
         <tr><td>1</td><td>Tumble dryer (TD)</td><td>600 w space</td><td>Under worktop, door end</td></tr>
         <tr><td>2</td><td>Washing machine (WM)</td><td>600 w space</td><td>Under worktop, next to sink run</td></tr>
-        <tr><td>3</td><td>Base unit, blind corner</td><td>1200 × 560 × 720</td><td>600 door under sink bowl, blind section behind WM</td></tr>
+        <tr><td>3</td><td>Base unit, blind corner</td><td>1000 × 560 × 720</td><td>600 door under sink bowl, blind section behind WM</td></tr>
         <tr><td>4</td><td>Face plate</td><td>200 × 760</td><td>Door edge to WM front line</td></tr>
         <tr><td>5</td><td>End panel</td><td>870 × 580 × 18</td><td>Between WM and base unit, floor to underside of top</td></tr>
         <tr><td>6</td><td>Gap</td><td>160</td><td>Base unit to washer-wall, under sink top</td></tr>
@@ -105,7 +105,7 @@ const WIN_L = { z0: 350, z1: 2590, reveal: 190 };
 const WIN_B = { x0: 260, x1: 1360, recess: 40 };
 const TOP_R = { x0: 760, z0: 950, z1: 2180 };          // washer-side worktop 1230 × 600
 const TOP_B = { z0: 2180 };                             // sink-wall worktop 1360 × 600
-const UNIT = { x1: 1200, z0: 2200, door: 600 };         // 1200 base unit, carcass front at z=2200
+const UNIT = { x1: 1000, z0: 2200, door: 600 };         // 1000 base unit, carcass front at z=2200
 const FRONT = 800;                                      // washer / face-plate front line
 const EP = 18, APP_W = (UNIT.z0 - EP - TOP_R.z0 - 18) / 2;
 const SINK = { x0: 40, x1: 1040, z0: 2240, z1: 2730 }, BOWL = { x0: 90, x1: 510, z0: 2310, z1: 2660 };
@@ -238,10 +238,10 @@ function tag(n, x, y, lx, ly) {
 }
 tag(1, 880, 1010);                                        // dryer
 tag(2, 880, 1630);                                        // washer
-tag(3, 1120, 2420);                                       // 1200 base unit
+tag(3, 920, 2420);                                        // 1000 base unit
 tag(4, 700, 2085, 700, 2185);                             // face plate
 tag(5, 1250, 2090, 1250, 2185);                           // end panel
-tag(6, 1290, 2440);                                       // gap
+tag(6, 1180, 2440);                                       // gap
 tag(7, 900, 760, 1150, 950);                              // wall units (leader to their end)
 tag(8, 240, 300, 240, 105);                               // towel rail
 tag(9, 1250, SOCKET_Z, W - 30, SOCKET_Z);                // socket
@@ -284,7 +284,7 @@ dim(PASS.z1, TOP_B.z0, RX1, '1230', 'z', 1); dim(TOP_B.z0, L, RX1, '600', 'z', 1
 const CY = TOP_B.z0 - 280;
 for (const x of [0, UNIT.door, FRONT]) ext(x, TOP_B.z0 - 20, x, CY - 25);
 dim(0, UNIT.door, CY, 'DOOR 600', 'x'); dim(UNIT.door, FRONT, CY, '200', 'x');
-dim(UNIT.x1, W, L - 70, 'GAP 160', 'x');
+dim(UNIT.x1, W, L - 70, 'GAP 360', 'x');
 dim(0, TOP_R.x0, 1560, 'CLEAR 780', 'x');
 dim(TOP_R.x0, W, TOP_R.z0 - 70, '600', 'x');
 LAYER = svg;
@@ -655,7 +655,7 @@ function handle(pos, vertical, axis) {
 // Right-hand run: washing machine + tumble dryer side by side under the worktop
 // end panel at the door end, flush with the end of the wall
 bb(RUN_R.x0 - OH, 0, RUN_R.z0, W, WT - 0.04, RUN_R.z0 + 0.018, M.cab);
-const EP = 0.018;                                  // end panel between the washer and the 1200 sink unit
+const EP = 0.018;                                  // end panel between the washer and the 1000 sink unit
 const APP_W = (RUN_B.z0 - EP - RUN_R.z0 - 0.018) / 2;   // ~620 mm each
 function appliance(z0, z1, dryer) {
   const x0 = RUN_R.x0 - 0.0, h = 0.85, front = x0;
@@ -704,9 +704,9 @@ function carcass(x0, y0, z0, x1, y1, z1, open, shelves, withTop) {
   }
 }
 
-// Sink-wall run: one 1200 mm blind-corner unit from the left-wall end (600 door + blind section behind
+// Sink-wall run: one 1000 mm blind-corner unit from the left-wall end (600 door + blind section behind
 // the washer), leaving a gap between it and the right-hand wall
-const BU_W = 1.2;
+const BU_W = 1.0;
 carcass(XL, PL, RUN_B.z0 + 0.02, XL + BU_W, CAB_H, L, '-z', 0, false);
 bb(XL, 0, RUN_B.z0 + REC, RUN_R.x0 + REC, PL, L, M.plinth);
 // 600 mm sink base unit at the left-wall end (under the bowl), handle on the corner side
@@ -881,7 +881,7 @@ dimLine([RUN_R.x0 - OH, WT + 0.012, RUN_R.z0], [RUN_R.x0 - OH, WT + 0.012, RUN_B
 dimLine([0.04, 1.09, 0.09], [0.44, 1.09, 0.09], 'Electric towel rail 400 × 800 mm', [0, 0, 0]);
 dimLine([XL + 0.005, 1.6, 0], [XL + 0.005, 1.6, PILLAR.z], 'Pillar 350 mm', [0.04, 0, 0]);
 dimLine([XL, 1.0, 0.02], [DOOR.x0 - 0.035, 1.0, 0.02], 'Sill to door frame 475 mm', [0, 0, 0]);
-dimLine([XL, PL + 0.02, L - 0.3], [XL + BU_W, PL + 0.02, L - 0.3], 'Unit 1200 mm', [0, 0, 0]);
+dimLine([XL, PL + 0.02, L - 0.3], [XL + BU_W, PL + 0.02, L - 0.3], 'Unit 1000 mm', [0, 0, 0]);
 dimLine([0, WT + 0.01, RUN_B.z0 - OH], [W, WT + 0.01, RUN_B.z0 - OH], 'Front 1360 mm', [0, 0.06, -0.04]);
 dimLine([SB, 0.5, RUN_B.z0 - 0.005], [RUN_R.x0, 0.5, RUN_B.z0 - 0.005], 'Face plate 200 × 760 mm', [0, 0, -0.03]);
 dimLine([RUN_R.x0 - 0.005, 0.02, RUN_B.z0 - EP], [RUN_R.x0 - 0.005, TOP0, RUN_B.z0 - EP], 'End panel 870 × 580', [-0.03, 0, -0.03]);
