@@ -571,19 +571,13 @@ function shakerDoor(x0, z0, x1, z1, faceDir) {
   return { g, p, along, front, t, y1 };
 }
 function handle(pos, vertical, axis) {
-  const g = new THREE.Group();
-  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.14), M.chrome);
-  if (!vertical) bar.rotation.z = Math.PI / 2;
-  g.add(bar);
-  for (const s of [-0.055, 0.055]) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.03), M.chrome);
-    leg.rotation[axis === 'x' ? 'z' : 'x'] = Math.PI / 2;
-    if (vertical) leg.position.y = s; else leg.position.x = s;
-    if (axis === 'x') leg.position.x += 0.015; else leg.position.z += 0.015;
-    g.add(leg);
-  }
-  if (axis === 'x') { bar.position.x = -0.0; g.position.set(pos[0] - 0.03, pos[1], pos[2]); }
-  else g.position.set(pos[0], pos[1], pos[2] - 0.03);
+  // GoodHome Chervil Nickel effect round pull handle: (L)32mm x (D)31mm, single-point fixing
+  const len = 0.032, r = 0.0155;
+  const knob = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 24), M.chrome);
+  if (axis === 'x') { knob.rotation.z = Math.PI / 2; knob.position.x = -len / 2; }
+  else { knob.rotation.x = Math.PI / 2; knob.position.z = -len / 2; }
+  const g = new THREE.Group(); g.add(knob);
+  g.position.set(pos[0], pos[1], pos[2]);
   ROOT.add(g);
 }
 
@@ -664,8 +658,8 @@ function wallUnit(z0, w, doors) {
     const a = z0 + w * i / doors + 0.002, b = z0 + w * (i + 1) / doors - 0.002;
     bb(x0 - t, WU.y0 + 0.002, a, x0, y1 - 0.002, b, M.cab);
     bb(x0 - t - 0.002, WU.y0 + r, a + r, x0 - t + 0.008, y1 - r, b - r, M.cabEdge);
-    // handle at the bottom, on the meeting edge for a 2-door unit, or near the start edge for a single door
-    const hz = doors === 2 ? (i === 0 ? b - 0.05 : a + 0.05) : a + 0.05;
+    // handle at the bottom, on the meeting edge for a 2-door unit, or on the right edge for a single door
+    const hz = doors === 2 ? (i === 0 ? b - 0.05 : a + 0.05) : b - 0.05;
     handle([x0 - t, WU.y0 + 0.12, hz], true, 'x');
   }
   ROOT = scene;
@@ -881,8 +875,8 @@ const UNIT = {
 const SCHEMES = [
   { unit: 'pebble', tiles: { name: 'Handmade-look warm white metro, 75 × 150 vertical stack', layout: 'metro', tile: '#f2eee3', grout: '#d5ccba', jitter: 12, rough: 0.15 },
     grout: '"jasmine" grout',
-    wall: { name: 'Farrow & Ball Skimming Stone', hex: 0xdcd3c5 },
-    top: { name: 'Kala Authentic Oak Wood Effect Laminate Square Edge', kind: 'wood', base: '#b98a5a', swatch: '#b98a5a', rough: 0.6 } },
+    wall: { name: 'White (TBC)', hex: 0xffffff },
+    top: { name: 'Howdens Ages Oak Effect Worktop, WTP7060', kind: 'wood', base: '#b98a5a', swatch: '#b98a5a', rough: 0.6 } },
 ];
 
 function topTexture(o) {
