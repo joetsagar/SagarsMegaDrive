@@ -571,9 +571,10 @@ bb(DOOR.x0 - 0.035, DOOR.h, -0.012, DOOR.x1 + 0.035, DOOR.h + 0.07, 0.012, M.pvc
 // ---- Base units ----
 const TOP0 = WT - 0.04, OH = 0.02; // worktop: 40mm thick, 20mm overhang
 const CAB_H = WT - 0.04, PL = 0.1, REC = 0.06;     // carcass top, plinth height, plinth recess
-function shakerDoor(x0, z0, x1, z1, faceDir) {
+function shakerDoor(x0, z0, x1, z1, faceDir, y0 = PL + 0.005, y1 = CAB_H - 0.005) {
   // faceDir: 'x-' (faces into the room along -x) or 'z-' (faces along -z)
-  const t = 0.02, y0 = PL + 0.005, y1 = CAB_H - 0.005;
+  // y0/y1 default to door height; pass a taller range for a fixed panel (e.g. floor to worktop)
+  const t = 0.02;
   const along = faceDir === 'x-' ? [z0, z1] : [x0, x1];
   const front = faceDir === 'x-' ? x0 : z0;
   const g = new THREE.Group(); ROOT.add(g);
@@ -581,9 +582,6 @@ function shakerDoor(x0, z0, x1, z1, faceDir) {
   p(along[0] + 0.002, y0, along[1] - 0.002, y1, front - t, front, M.cab);
   const r = 0.06; // shaker frame
   p(along[0] + r, y0 + r, along[1] - r, y1 - r, front - t - 0.002, front - t + 0.008, M.cabEdge);
-  // bar handle near the top, vertical
-  const hx = faceDir === 'x-' ? null : null;
-  const hp = along[1] - along[0] > 0 ? along : along;
   return { g, p, along, front, t, y1 };
 }
 function handle(pos, vertical, axis) {
@@ -598,8 +596,8 @@ function handle(pos, vertical, axis) {
 }
 
 // Right-hand run: washing machine + tumble dryer side by side under the worktop
-// end panel at the door end, flush with the end of the wall
-bb(RUN_R.x0 - OH, 0, RUN_R.z0, W, WT - 0.04, RUN_R.z0 + 0.018, M.cab);
+// end panel at the door end, flush with the end of the wall - same shaker frame as the doors
+shakerDoor(RUN_R.x0 - OH, RUN_R.z0 + 0.018, W, RUN_R.z0 + 0.018, 'z-', 0, WT - 0.04);
 const EP = 0.018;                                  // end panel between the washer and the 1000 sink unit
 const APP_W = (RUN_B.z0 - EP - RUN_R.z0 - 0.018) / 2;   // ~620 mm each
 function appliance(z0, z1, dryer) {
@@ -624,8 +622,8 @@ const applGroup = new THREE.Group(); scene.add(applGroup);   // hidden in the Ca
 ROOT = applGroup;
 appliance(RUN_B.z0 - EP - APP_W, RUN_B.z0 - EP, false);    // washer, nearest the sink
 ROOT = scene;
-// end panel: floor to underside of the worktop, front flush with the washer front / face plate
-bb(RUN_R.x0, 0, RUN_B.z0 - EP, W, TOP0, RUN_B.z0, M.cab);
+// end panel: floor to underside of the worktop, front flush with the washer front / face plate - same shaker frame as the doors
+shakerDoor(RUN_R.x0, RUN_B.z0, W, RUN_B.z0, 'z-', 0, TOP0);
 ROOT = applGroup;
 appliance(RUN_R.z0 + 0.018, RUN_R.z0 + 0.018 + APP_W, true); // dryer, nearest the door
 ROOT = scene;
@@ -659,9 +657,9 @@ const SB = XL + 0.6;   // 600 mm door, starting flush with the window wall
 ROOT = doorsGroup;
 shakerDoor(XL, RUN_B.z0 + 0.02, SB, RUN_B.z0 + 0.02, 'z-');
 handle([SB - 0.05, CAB_H - 0.12, RUN_B.z0 + 0.0], true, 'z');
-// fixed filler panel in front of the blind corner
-// plain face plate from the door to the washer-run front line: 200 W x 760 H
-bb(SB + 0.002, PL + 0.005, RUN_B.z0, RUN_R.x0, CAB_H - 0.005, RUN_B.z0 + 0.02, M.cab);
+// fixed filler panel in front of the blind corner, same shaker frame as the doors either side
+// face plate from the door to the washer-run front line: 200 W x 760 H
+shakerDoor(SB + 0.002, RUN_B.z0 + 0.02, RUN_R.x0, RUN_B.z0 + 0.02, 'z-');
 ROOT = scene;
 
 // ---- Wall units on the right-hand wall (from the door end): 600, 600, then 300, all single-door ----
