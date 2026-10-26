@@ -22,7 +22,6 @@
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#c9c1b2; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#c9c1b2; --heater:#4a3430; } }
   :root[data-theme="dark"] #plan2d { --paper:#222326; --wall:#d6d6d6; --unit:#2f3d34; --unitLine:#c9c1b2; --top:#4a3b28; --topLine:#c9a06a; --appl:#33353a; --glass:#2d4b5a; --dim:#7cc4ad; --wallunit:#c9c1b2; --heater:#4a3430; }
   #plan2d[hidden] { display:none; }
-  #plan2d.kitchen-hidden #kitchen-items, #plan2d.kitchen-hidden .sched { display:none; }
   #plan2d .wrap { max-width:1000px; margin:0 auto; }
   #plan2d .sheet { background:#fff; border-radius:4px; box-shadow:0 1px 8px rgba(0,0,0,.12); padding:8px; }
   #plan2d .sched { width:100%; border-collapse:collapse; margin-top:14px; font:12px/1.4 Arial, Helvetica, sans-serif; background:#fff; color:#1d1d1f; }
@@ -36,7 +35,6 @@
   #plan2d .notes { margin-top:14px; font-size:13px; color:var(--muted); line-height:1.5; }
   #plan2d .planbar { display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px; }
   #plan2d .planbar button { font:600 13px system-ui, sans-serif; border:0; border-radius:8px; padding:9px 14px; background:var(--accent); color:#fff; cursor:pointer; touch-action:manipulation; }
-  #plan2d .planbar button.ghost { background:transparent; color:var(--accent); border:1.5px solid var(--accent); }
   /* Print / Save as PDF: plan on page 1 at true 1:20 on A4, schedule on page 2 */
   @page { size: A4 portrait; margin: 10mm; }
   @media print {
@@ -67,24 +65,19 @@
 <div id="plan2d" hidden>
   <div class="wrap">
     <div class="planbar">
-      <button id="toggleKitchen" class="ghost" type="button">Hide kitchen items</button>
       <button id="printPlan" type="button">Print / Save as PDF</button>
     </div>
     <div class="sheet"><svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg></div>
     <table class="sched">
       <thead><tr><th>#</th><th>Item</th><th>Size (mm)</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>Tumble dryer (TD)</td><td>600 w space</td><td>Under worktop, door end</td></tr>
-        <tr><td>2</td><td>Washing machine (WM)</td><td>600 w space</td><td>Under worktop, next to sink run</td></tr>
-        <tr><td>3</td><td>Base unit, blind corner</td><td>1000 × 560 × 720</td><td>600 door under sink bowl, blind section behind WM</td></tr>
-        <tr><td>4</td><td>Face plate</td><td>200 × 760</td><td>Door edge to WM front line</td></tr>
-        <tr><td>5</td><td>End panel</td><td>870 × 580 × 18</td><td>Between WM and base unit, floor to underside of top</td></tr>
-        <tr><td>6</td><td>Gap</td><td>160</td><td>Base unit to washer-wall, under sink top</td></tr>
-        <tr><td>7</td><td>Wall units (over)</td><td>1200 + 300, 320 d × 720 h</td><td>Underside at 1450 AFF; LED strip below</td></tr>
-        <tr><td>8</td><td>Electric towel rail</td><td>400 × 800</td><td>Bottom at 250 AFF, 90 off wall</td></tr>
-        <tr><td>9</td><td>Triple switched socket</td><td>225 × 86</td><td>1120 AFF (210 above worktop)</td></tr>
-        <tr><td>10</td><td>White ceramic inset sink, bowl + drainer</td><td>1000 × 490</td><td>Bowl over the 600 door; chrome twin-lever bridge mixer tap</td></tr>
-        <tr><td>11</td><td>Window, tiled sill &amp; reveals</td><td>2240, 190 deep reveal</td><td>Sill at 950 AFF</td></tr>
+        <tr><td>1</td><td>Base unit, blind corner</td><td>1000 × 560 × 720</td><td>600 door under sink bowl, blind section towards the washer wall</td></tr>
+        <tr><td>2</td><td>Face plate</td><td>200 × 760</td><td>Door edge to the 800mm front line</td></tr>
+        <tr><td>3</td><td>End panel</td><td>870 × 580 × 18</td><td>At the end of the base unit run, floor to underside of top</td></tr>
+        <tr><td>4</td><td>Gap</td><td>160</td><td>Base unit to washer-wall, under sink top</td></tr>
+        <tr><td>5</td><td>Wall units (over)</td><td>1200 + 300, 320 d × 720 h</td><td>Underside at 1450 AFF; LED strip below</td></tr>
+        <tr><td>6</td><td>White ceramic inset sink, bowl + drainer</td><td>1000 × 490</td><td>Bowl over the 600 door; chrome twin-lever bridge mixer tap</td></tr>
+        <tr><td>7</td><td>Window, tiled sill &amp; reveals</td><td>2240, 190 deep reveal</td><td>Sill at 950 AFF</td></tr>
         <tr><td>—</td><td>Worktops</td><td>1360 × 600 + 1230 × 600</td><td>Sink-wall top full width; washer top butts into it</td></tr>
         <tr><td>—</td><td>Sink window</td><td>1100 w</td><td>Recessed 40, sill 1030 AFF</td></tr>
       </tbody>
@@ -106,20 +99,17 @@ const WIN_B = { x0: 260, x1: 1360, recess: 40 };
 const TOP_R = { x0: 760, z0: 950, z1: 2180 };          // washer-side worktop 1230 × 600
 const TOP_B = { z0: 2180 };                             // sink-wall worktop 1360 × 600
 const UNIT = { x1: 1000, z0: 2200, door: 600 };         // 1000 base unit, carcass front at z=2200
-const FRONT = 800;                                      // washer / face-plate front line
-const EP = 18, APP_W = (UNIT.z0 - EP - TOP_R.z0 - 18) / 2;
+const FRONT = 800;                                      // face-plate front line
+const EP = 18;
 const SINK = { x0: 40, x1: 1040, z0: 2240, z1: 2730 }, BOWL = { x0: 90, x1: 510, z0: 2310, z1: 2660 };
 const WU = { x0: W - 320, a: [950, 2150], b: [2150, 2450] };
-const RAIL = { x0: 40, x1: 440, z0: 75, z1: 105 };
-const SOCKET_Z = TOP_R.z0 + 18 + APP_W;
 
 const INK = '#1d1d1f', MID = '#555', LIGHT = '#8a8a8a', DIMC = '#1d1d1f';
 const svg = document.getElementById('plan');
 const NS = 'http://www.w3.org/2000/svg';
 const VB = { x: -1150, y: -1000, w: 3450, h: 4700 };
 svg.setAttribute('viewBox', `${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
-let LAYER = svg;   // current drawing target; switched to kitchenLayer while drawing kitchen content
-function el(tag, attrs, parent = LAYER) {
+function el(tag, attrs, parent = svg) {
   const e = document.createElementNS(NS, tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
   parent.appendChild(e); return e;
@@ -139,10 +129,6 @@ const defs = el('defs', {});
 const pat = el('pattern', { id: 'hatch', width: 40, height: 40, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
 el('rect', { width: 40, height: 40, fill: '#ececec' }, pat);
 el('line', { x1: 0, y1: 0, x2: 0, y2: 40, stroke: '#9a9a9a', 'stroke-width': 4 }, pat);
-
-// everything kitchen-specific (worktops, units, appliances, sink, wall units, tags, their
-// dimensions) lives in here so it can be hidden to leave just the empty room shell
-const kitchenLayer = el('g', { id: 'kitchen-items' });
 
 // ---- Dimensions: thin line, 45° ticks, extension lines with a small gap, text above the line ----
 function dim(a, b, at, label, axis, side = -1) {
@@ -190,20 +176,12 @@ line(WIN_B.x0, L + WIN_B.recess + 35, WIN_B.x1, L + WIN_B.recess + 35, 2, INK);
 for (const x of [DOOR.x0, DOOR.x1]) box(x - DOOR.arch, -T, x + DOOR.arch, 0, { fill: '#fff', stroke: INK, 'stroke-width': 4 });
 line(DOOR.x0, -T / 2, DOOR.x1, -T / 2, 2, LIGHT, '12 10');              // threshold
 
-LAYER = kitchenLayer;   // everything from here to the numbered tags is kitchen content
-
 // ---- Worktops (medium line) ----
 const wt = { fill: '#fff', stroke: INK, 'stroke-width': 4.5 };
 box(TOP_R.x0, TOP_R.z0, W, TOP_B.z0, wt);
 box(0, TOP_B.z0, W, L, wt);
 
 // ---- Under-counter items (thin) ----
-// washer / dryer
-for (const [z0, tag] of [[TOP_R.z0 + 18, 'TD'], [TOP_R.z0 + 18 + APP_W, 'WM']]) {
-  box(FRONT + 15, z0 + 12, W - 30, z0 + APP_W - 12, { fill: 'none', stroke: MID, 'stroke-width': 2.5 });
-  el('circle', { cx: (FRONT + W) / 2, cy: z0 + APP_W / 2, r: 190, fill: 'none', stroke: LIGHT, 'stroke-width': 2 });
-  text((FRONT + W) / 2, z0 + APP_W / 2, tag, { size: 44, weight: 700 });
-}
 box(FRONT, UNIT.z0 - EP, W, UNIT.z0, { fill: INK });                    // end panel
 // base unit front, door, face plate, gap
 line(0, UNIT.z0, UNIT.x1, UNIT.z0, 2.5, MID);
@@ -223,39 +201,24 @@ for (const [z0, z1] of [WU.a, WU.b]) {
   box(WU.x0, z0, W, z1, { fill: 'none', stroke: INK, 'stroke-width': 2.5, 'stroke-dasharray': '26 14' });
 }
 
-// ---- Towel rail + socket ----
-box(RAIL.x0, RAIL.z0, RAIL.x1, RAIL.z1, { fill: '#fff', stroke: INK, 'stroke-width': 3 });
-for (const x of [RAIL.x0 + 12, RAIL.x1 - 12]) line(x, 0, x, RAIL.z0, 2.5, INK);
-// triple socket: BS-style symbol on the wall face
-box(W - 26, SOCKET_Z - 112, W, SOCKET_Z + 112, { fill: '#fff', stroke: INK, 'stroke-width': 3 });
-for (const dz of [-70, 0, 70]) line(W - 26, SOCKET_Z + dz, W - 60, SOCKET_Z + dz, 3, INK);
-
 // ---- Numbered tags (keyed to the schedule) ----
 function tag(n, x, y, lx, ly) {
   if (lx !== undefined) line(lx, ly, x, y, 2, INK);
   el('circle', { cx: x, cy: y, r: 36, fill: '#fff', stroke: INK, 'stroke-width': 3 });
   text(x, y + 1, String(n), { size: 34, weight: 700 });
 }
-tag(1, 880, 1010);                                        // dryer
-tag(2, 880, 1630);                                        // washer
-tag(3, 920, 2420);                                        // 1000 base unit
-tag(4, 700, 2085, 700, 2185);                             // face plate
-tag(5, 1250, 2090, 1250, 2185);                           // end panel
-tag(6, 1180, 2440);                                       // gap
-tag(7, 900, 760, 1150, 950);                              // wall units (leader to their end)
-tag(8, 240, 300, 240, 105);                               // towel rail
-tag(9, 1250, SOCKET_Z, W - 30, SOCKET_Z);                // socket
-tag(10, 760, 2485);                                       // sink
-tag(11, 150, 800, -100, 900);                             // long window
-
-LAYER = svg;   // back to the room shell
+tag(1, 920, 2420);                                        // 1000 base unit
+tag(2, 700, 2085, 700, 2185);                             // face plate
+tag(3, 1250, 2090, 1250, 2185);                           // end panel
+tag(4, 1180, 2440);                                       // gap
+tag(5, 900, 760, 1150, 950);                              // wall units (leader to their end)
+tag(6, 760, 2485);                                        // sink
+tag(7, 150, 800, -100, 900);                              // long window
 
 // ---- Room label ----
-const roomLabel = text(380, 1150, 'UTILITY', { size: 64, weight: 700, ls: 6 });
-const roomSize = text(380, 1230, '2780 × 1360', { size: 34, color: MID });
-LAYER = kitchenLayer;
+text(380, 1150, 'UTILITY', { size: 64, weight: 700, ls: 6 });
+text(380, 1230, '2780 × 1360', { size: 34, color: MID });
 text(380, 1280, 'WORKTOP H 910', { size: 28, color: MID });
-LAYER = svg;
 
 // ---- Dimension strings ----
 // left wall (tier 1: segments, tier 2: overall)
@@ -278,7 +241,6 @@ dim(0, W, TY2, '1360', 'x');
 const RX1 = W + T + 170, RX2 = W + T + 330;
 for (const z of [0, PASS.z1, TOP_B.z0, L]) ext(W + T + 40, z, RX2 + 30, z);
 dim(0, PASS.z1, RX1, 'OPENING 950', 'z', 1); dim(PASS.z1, L, RX2, '1830', 'z', 1);
-LAYER = kitchenLayer;
 dim(PASS.z1, TOP_B.z0, RX1, '1230', 'z', 1); dim(TOP_B.z0, L, RX1, '600', 'z', 1);
 // inside: run along the sink-unit front (one chain) + walkway + worktop depths
 const CY = TOP_B.z0 - 280;
@@ -287,7 +249,6 @@ dim(0, UNIT.door, CY, 'DOOR 600', 'x'); dim(UNIT.door, FRONT, CY, '200', 'x');
 dim(UNIT.x1, W, L - 70, 'GAP 360', 'x');
 dim(0, TOP_R.x0, 1560, 'CLEAR 780', 'x');
 dim(TOP_R.x0, W, TOP_R.z0 - 70, '600', 'x');
-LAYER = svg;
 
 // ---- Scale bar + title block ----
 const SBX = -TL, SBY = L + T + 560;
@@ -305,32 +266,6 @@ text(TBX + TBW / 2 + 30, TBY + 225, 'sagarsmegadrive.online/utility', { size: 24
 
   // print the 2D plan (browser print dialog: choose "Save as PDF")
   document.getElementById('printPlan').addEventListener('click', () => window.print());
-  // toggle between the empty room shell and the furnished plan (also hides/shows the schedule);
-  // a CSS class on the panel (rather than touching kitchenLayer's own style) repaints reliably
-  // everywhere, including iOS Safari, where toggling display on an SVG <g> directly can stick.
-  const kitchenBtn = document.getElementById('toggleKitchen');
-  const plan2d = document.getElementById('plan2d');
-  const roomCenterX = W / 2, roomCenterZ = L / 2;
-  let kitchenShown = true;
-  // sets every bit of UI from kitchenShown directly (rather than incrementally toggling each
-  // one) so a stray double-fired click can never leave the button text, layer and labels
-  // disagreeing with each other - whichever value kitchenShown ends on, everything matches it.
-  function applyKitchenState() {
-    plan2d.classList.toggle('kitchen-hidden', !kitchenShown);
-    kitchenBtn.textContent = kitchenShown ? 'Hide kitchen items' : 'Show kitchen items';
-    const [lx, ly] = kitchenShown ? [380, 1150] : [roomCenterX, roomCenterZ - 40];
-    const [sx, sy] = kitchenShown ? [380, 1230] : [roomCenterX, roomCenterZ + 40];
-    roomLabel.setAttribute('x', lx); roomLabel.setAttribute('y', ly);
-    roomSize.setAttribute('x', sx); roomSize.setAttribute('y', sy);
-  }
-  let lastToggle = 0;
-  kitchenBtn.addEventListener('click', () => {
-    const now = Date.now();
-    if (now - lastToggle < 400) return;   // ignore a duplicate/ghost click fired right after the real one
-    lastToggle = now;
-    kitchenShown = !kitchenShown;
-    applyKitchenState();
-  });
   // printing from the 3D view still prints the plan
   // menu: "2D plan" shows the plan; any 3D view button goes back to 3D
   const overlay = document.getElementById('plan2d'), btn = document.getElementById('p2d');
@@ -493,8 +428,8 @@ const M = {
 
 // geometry is added to ROOT by default; switched to the removable groups below
 let ROOT = scene;
-const doorsGroup = new THREE.Group(), topGroup = new THREE.Group();
-scene.add(doorsGroup, topGroup);
+const doorsGroup = new THREE.Group(), topGroup = new THREE.Group(), sinkGroup = new THREE.Group();
+scene.add(doorsGroup, topGroup, sinkGroup);   // sinkGroup stays visible even in Carcass Build view
 function box(w, h, d, mat, x, y, z, parent = ROOT, shadow = true) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
   m.position.set(x, y, z);
@@ -829,7 +764,9 @@ tiles(W - 0.012, WT, PASS.z1, W, TILE_TOP, L);            // washer wall, workto
 }
 
 // ---- Inset white ceramic sink: bowl on the left-hand end, ribbed drainer to the right ----
-ROOT = topGroup;
+// its own group (not topGroup) so it stays visible in the Carcass Build view, showing the
+// bowl's position and depth against the bare carcasses
+ROOT = sinkGroup;
 const RIM = 0.006;
 bb(SINK.x0, WT, SINK.z0, BOWL.x0, WT + RIM, SINK.z1, M.ceramic);
 bb(BOWL.x1, WT, SINK.z0, SINK.x1, WT + RIM, SINK.z1, M.ceramic);
