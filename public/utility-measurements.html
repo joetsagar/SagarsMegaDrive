@@ -63,7 +63,7 @@
 <div class="ui">
   <h1>Utility measurements</h1>
   <p id="hint">2780 × 1360 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
-  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="pphoto">Photo Realistic</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button>
+  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="pphoto">Photo Realistic</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button><button id="snap" title="Save a PNG of the current 3D view - feed it into Runway or similar for an AI photorealistic pass">Save screenshot</button>
 </div>
 
 <div id="plan2d" hidden>
@@ -871,8 +871,10 @@ function fitFov(base) {
   const h = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(base) / 2) * ref);
   return Math.min(85, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(h / 2) / a)));
 }
+let currentView = 'v3d';
 function go(name, instant) {
   const v = views[name];
+  currentView = name;
   document.querySelectorAll('#v3d,#vdoor,#vplan,#vsink').forEach(b => b.classList.toggle('on', b.id === name));
   baseFov = name === 'vplan' ? 22 : name === 'vsink' ? 50 : 40; camera.fov = fitFov(baseFov); camera.updateProjectionMatrix();
   const to = { pos: new THREE.Vector3(...v.pos), tgt: new THREE.Vector3(...v.tgt) };
@@ -881,6 +883,32 @@ function go(name, instant) {
 }
 for (const id of ['v3d', 'vdoor', 'vplan', 'vsink']) document.getElementById(id).onclick = () => go(id);
 document.getElementById('leds').onclick = e => { ledGroup.visible = !ledGroup.visible; e.target.classList.toggle('on', ledGroup.visible); };
+
+// ---- Screenshot export (for feeding a view into an AI image tool, e.g. Runway) ----
+// WebGLRenderer doesn't keep preserveDrawingBuffer on by default, so the capture has to happen
+// right after a render call, inside the same animation frame, rather than whenever the button fires.
+let snapshotCallback = null;
+function exportSnapshot(onDone) {
+  canvas.toBlob(blob => {
+    if (blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+      a.href = url; a.download = `utility-room-${currentView}-${stamp}.png`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    onDone?.();
+  }, 'image/png');
+}
+document.getElementById('snap').addEventListener('click', e => {
+  const btn = e.currentTarget, label = btn.textContent;
+  btn.disabled = true;
+  snapshotCallback = () => {
+    btn.textContent = 'Saved'; btn.disabled = false;
+    setTimeout(() => { btn.textContent = label; }, 1200);
+  };
+});
 
 // ---- Colour schemes (cycle with the Scheme button) - units, worktop, splashback and walls; the floor never changes ----
 const UNIT = {
@@ -985,6 +1013,7 @@ renderer.setAnimationLoop(() => {
   updateWalls();
   renderer.render(scene, camera);
   labelR.render(scene, camera);
+  if (snapshotCallback) { const cb = snapshotCallback; snapshotCallback = null; exportSnapshot(cb); }
 });
 </script>
 </body>
