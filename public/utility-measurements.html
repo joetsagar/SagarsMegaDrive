@@ -71,12 +71,12 @@
     <table class="sched">
       <thead><tr><th>#</th><th>Item</th><th>Size (mm)</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>Base unit, blind corner</td><td>1000 × 560 × 720</td><td>600 door under sink bowl, blind section towards the washer wall</td></tr>
+        <tr><td>1</td><td>Base unit, blind corner</td><td>1000 × 560 × 720</td><td>600 door towards the window wall, blind section under the sink bowl</td></tr>
         <tr><td>2</td><td>Face plate</td><td>200 × 760</td><td>Door edge to the 800mm front line</td></tr>
         <tr><td>3</td><td>End panel</td><td>870 × 580 × 18</td><td>At the end of the base unit run, floor to underside of top</td></tr>
         <tr><td>4</td><td>Gap</td><td>160</td><td>Base unit to washer-wall, under sink top</td></tr>
         <tr><td>5</td><td>Wall units (over)</td><td>1200 + 300, 320 d × 720 h</td><td>Underside at 1450 AFF; LED strip below</td></tr>
-        <tr><td>6</td><td>White ceramic inset sink, bowl + drainer</td><td>1000 × 490</td><td>Bowl over the 600 door; chrome twin-lever bridge mixer tap</td></tr>
+        <tr><td>6</td><td>Reginox RL304CW white ceramic inset sink, bowl + drainer</td><td>1010 × 525</td><td>Bowl over the blind section, 235 deep; chrome twin-lever bridge mixer tap</td></tr>
         <tr><td>7</td><td>Window, tiled sill &amp; reveals</td><td>2240, 190 deep reveal</td><td>Sill at 950 AFF</td></tr>
         <tr><td>—</td><td>Worktops</td><td>1360 × 600 + 1230 × 600</td><td>Sink-wall top full width; washer top butts into it</td></tr>
         <tr><td>—</td><td>Sink window</td><td>1100 w</td><td>Recessed 40, sill 1030 AFF</td></tr>
@@ -101,7 +101,7 @@ const TOP_B = { z0: 2180 };                             // sink-wall worktop 136
 const UNIT = { x1: 1000, z0: 2200, door: 600 };         // 1000 base unit, carcass front at z=2200
 const FRONT = 800;                                      // face-plate front line
 const EP = 18;
-const SINK = { x0: 40, x1: 1040, z0: 2240, z1: 2730 }, BOWL = { x0: 90, x1: 510, z0: 2310, z1: 2660 };
+const SINK = { x0: 40, x1: 1050, z0: 2240, z1: 2765 }, BOWL = { x0: 590, x1: 1010, z0: 2310, z1: 2695 };
 const WU = { x0: W - 320, a: [950, 2150], b: [2150, 2450] };
 
 const INK = '#1d1d1f', MID = '#555', LIGHT = '#8a8a8a', DIMC = '#1d1d1f';
@@ -193,7 +193,7 @@ line(UNIT.x1, UNIT.z0, UNIT.x1, L, 2.5, MID, '14 10');                 // unit s
 box(SINK.x0, SINK.z0, SINK.x1, SINK.z1, { fill: '#fff', stroke: INK, 'stroke-width': 3, rx: 20 });
 box(BOWL.x0, BOWL.z0, BOWL.x1, BOWL.z1, { fill: '#fff', stroke: INK, 'stroke-width': 3, rx: 30 });
 el('circle', { cx: (BOWL.x0 + BOWL.x1) / 2, cy: (BOWL.z0 + BOWL.z1) / 2, r: 25, fill: 'none', stroke: INK, 'stroke-width': 2.5 });
-for (let x = BOWL.x1 + 60; x < SINK.x1 - 40; x += 45) line(x, BOWL.z0 + 25, x, BOWL.z1 - 25, 1.5, LIGHT);
+for (let x = SINK.x0 + 40; x < BOWL.x0 - 60; x += 45) line(x, BOWL.z0 + 25, x, BOWL.z1 - 25, 1.5, LIGHT);
 el('circle', { cx: (BOWL.x0 + BOWL.x1) / 2, cy: (BOWL.z1 + SINK.z1) / 2 + 10, r: 18, fill: INK });
 
 // ---- Overhead (dashed thin): wall units ----
@@ -309,8 +309,8 @@ const WIN_B = { x0: 0.26, x1: 1.36, sill: 1.03, head: 2.12, recess: 0.04 }; // 1
 const WT = 0.91;                                  // worktop height
 const RUN_R = { x0: 1.36 - 0.60 + 0.02, z0: 2.78 - 1.83 }; // right-hand worktop: 1830 long from the sink wall, 600 deep (incl. 20 overhang)
 const RUN_B = { z0: 2.78 - 0.60 + 0.02 };          // worktop along sink wall: 600 deep (incl. 20 overhang)
-const SINK = { x0: 0.04, x1: 1.04, z0: 2.24, z1: 2.73 };   // sink at the right-hand end, drainer to the left
-const BOWL = { x0: 0.09, x1: 0.51, z0: 2.31, z1: 2.66, d: 0.18 };   // bowl at the left-hand end, drainer to the right
+const SINK = { x0: 0.04, x1: 1.05, z0: 2.24, z1: 2.765 };   // Reginox RL304CW, 1010 x 525, bowl at the right-hand end, drainer to the left
+const BOWL = { x0: 0.59, x1: 1.01, z0: 2.31, z1: 2.695, d: 0.235 };
 
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -763,7 +763,7 @@ tiles(W - 0.012, WT, PASS.z1, W, TILE_TOP, L);            // washer wall, workto
   tiles(XL - rv, WIN_L.sill, WIN_L.z1 - t, XL, WIN_L.head, WIN_L.z1, wl.g);            // reveal at the sink end
 }
 
-// ---- Inset white ceramic sink: bowl on the left-hand end, ribbed drainer to the right ----
+// ---- Reginox RL304CW inset white ceramic sink: bowl on the right-hand end, ribbed drainer to the left ----
 // its own group (not topGroup) so it stays visible in the Carcass Build view, showing the
 // bowl's position and depth against the bare carcasses
 ROOT = sinkGroup;
@@ -782,7 +782,7 @@ const basket = new THREE.Mesh(new THREE.TorusGeometry(0.038, 0.004, 12, 32), M.c
 basket.rotation.x = Math.PI / 2;
 basket.position.set((BOWL.x0 + BOWL.x1) / 2, WT + RIM - BOWL.d + 0.004, (BOWL.z0 + BOWL.z1) / 2); ROOT.add(basket);
 // ribbed drainer grooves, moulded into the ceramic to the left of the bowl
-for (let x = BOWL.x1 + 0.07; x < SINK.x1 - 0.05; x += 0.035)
+for (let x = SINK.x0 + 0.05; x < BOWL.x0 - 0.07; x += 0.035)
   bb(x, WT + RIM, BOWL.z0 + 0.02, x + 0.006, WT + RIM + 0.002, BOWL.z1 - 0.02, M.ceramic, ROOT, false);
 // traditional twin-lever bridge mixer tap behind the bowl: chrome body, white ceramic lever heads
 const tapX = (BOWL.x0 + BOWL.x1) / 2, tapZ = (BOWL.z1 + SINK.z1) / 2 + 0.01;
