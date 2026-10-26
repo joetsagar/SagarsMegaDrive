@@ -51,6 +51,10 @@
     box-shadow:0 2px 12px rgba(0,0,0,.15); max-width:min(420px, calc(100vw - 60px)); font-size:12px; line-height:1.45; }
   #scheme b { font-size:13px; } #scheme .sw { display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:4px; border:1px solid rgba(0,0,0,.2); }
   #plan2d:not([hidden]) ~ #scheme { display:none; }
+  #photoReal { position:fixed; inset:0; background:var(--bg); z-index:5; display:flex; align-items:center; justify-content:center; padding:24px; box-sizing:border-box; }
+  #photoReal[hidden] { display:none; }
+  #photoReal img { max-width:100%; max-height:100%; border-radius:8px; box-shadow:0 2px 20px rgba(0,0,0,.25); display:block; }
+  #photoReal:not([hidden]) ~ #scheme { display:none; }
   .lbl { font-size:12px; font-weight:600; background:rgba(255,255,255,.9); color:#222; padding:2px 6px; border-radius:4px; white-space:nowrap; pointer-events:none; }
 </style>
 </head>
@@ -59,7 +63,7 @@
 <div class="ui">
   <h1>Utility measurements</h1>
   <p id="hint">2780 × 1360 mm · drag to orbit · scroll to zoom · right-drag to pan</p>
-  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button>
+  <button id="v3d" class="on">3D</button><button id="vdoor">From door</button><button id="vplan">Plan</button><button id="vsink">Sink view</button><button id="p2d">2D plan</button><button id="pphoto">Photo Realistic</button><button id="dims" class="on">Dimensions</button><button id="open">Carcass Build</button><button id="leds" class="on">Lights</button>
 </div>
 
 <div id="plan2d" hidden>
@@ -84,6 +88,10 @@
     </table>
     <p class="notes">AFF = above finished floor. Worktop 910 AFF. Skirting 120 mm. Door leaf removed, frame kept. Dashed lines are overhead (wall units). Check all dimensions on site before ordering.</p>
   </div>
+</div>
+
+<div id="photoReal" hidden>
+  <img src="/utility-photo-realistic.png" alt="Photo-realistic reference: grey shaker units, oak worktop, white walls, ceramic sink">
 </div>
 <script>
 // ---- 2D plan (drawn to scale, mm) ----
@@ -267,15 +275,23 @@ text(TBX + TBW / 2 + 30, TBY + 225, 'sagarsmegadrive.online/utility', { size: 24
   // print the 2D plan (browser print dialog: choose "Save as PDF")
   document.getElementById('printPlan').addEventListener('click', () => window.print());
   // printing from the 3D view still prints the plan
-  // menu: "2D plan" shows the plan; any 3D view button goes back to 3D
-  const overlay = document.getElementById('plan2d'), btn = document.getElementById('p2d');
+  // menu: "2D plan" / "Photo Realistic" show their overlay; any 3D view button goes back to 3D
+  const overlays = [
+    { el: document.getElementById('plan2d'), btn: document.getElementById('p2d') },
+    { el: document.getElementById('photoReal'), btn: document.getElementById('pphoto') },
+  ];
   const viewBtns = ['v3d', 'vdoor', 'vplan', 'vsink'].map(id => document.getElementById(id));
-  btn.addEventListener('click', () => {
-    overlay.hidden = false; btn.classList.add('on');
-    viewBtns.forEach(b => b.classList.remove('on'));
+  overlays.forEach(({ el, btn }) => {
+    btn.addEventListener('click', () => {
+      overlays.forEach(o => { o.el.hidden = o.el !== el; o.btn.classList.toggle('on', o.btn === btn); });
+      viewBtns.forEach(b => b.classList.remove('on'));
+    });
   });
-  viewBtns.forEach(b => b.addEventListener('click', () => { overlay.hidden = true; btn.classList.remove('on'); }));
-  if (location.hash === '#plan2d') btn.click();
+  viewBtns.forEach(b => b.addEventListener('click', () => {
+    overlays.forEach(o => { o.el.hidden = true; o.btn.classList.remove('on'); });
+  }));
+  if (location.hash === '#plan2d') overlays[0].btn.click();
+  if (location.hash === '#photo') overlays[1].btn.click();
 })();
 </script>
 
