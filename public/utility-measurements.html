@@ -420,10 +420,10 @@ const M = {
   wallTop: new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 }),
   floor: new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.6 }),
   outside: new THREE.MeshStandardMaterial({ color: 0xdedad2, roughness: 1 }),
-  cab: new THREE.MeshStandardMaterial({ color: 0xa9a294, roughness: 0.55 }),      // Ashmead Pebble (approx.)
-  cabEdge: new THREE.MeshStandardMaterial({ color: 0x9c9587, roughness: 0.6 }),
+  cab: new THREE.MeshStandardMaterial({ color: 0xb6a898, roughness: 0.55 }),      // Ashmead Pebble (approx.)
+  cabEdge: new THREE.MeshStandardMaterial({ color: 0xa79b8c, roughness: 0.6 }),
   carc: new THREE.MeshStandardMaterial({ color: 0xf1f0ea, roughness: 0.6 }),
-  plinth: new THREE.MeshStandardMaterial({ color: 0x7a7468, roughness: 0.7 }),
+  plinth: new THREE.MeshStandardMaterial({ color: 0x81776c, roughness: 0.7 }),
   wood: new THREE.MeshStandardMaterial({ map: woodTex(), roughness: 0.45 }),
   ceramic: new THREE.MeshStandardMaterial({ color: 0xfbfbf8, roughness: 0.18 }),           // white ceramic/fireclay sink
   ceramicIn: new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: 0.22, side: THREE.BackSide }),
@@ -886,7 +886,7 @@ document.getElementById('leds').onclick = e => { ledGroup.visible = !ledGroup.vi
 
 // ---- Colour schemes (cycle with the Scheme button) - units, worktop, splashback and walls; the floor never changes ----
 const UNIT = {
-  pebble: { name: 'Ashmead Matt Pebble', cab: 0xa9a294, edge: 0x9c9587, plinth: 0x7a7468 },
+  pebble: { name: 'Ashmead Matt Pebble', cab: 0xb6a898, edge: 0xa79b8c, plinth: 0x81776c },
 };
 const SCHEMES = [
   { unit: 'pebble', tiles: { name: 'Handmade-look warm white metro, 75 × 150 vertical stack', layout: 'metro', tile: '#f2eee3', grout: '#d5ccba', jitter: 12, rough: 0.15 },
